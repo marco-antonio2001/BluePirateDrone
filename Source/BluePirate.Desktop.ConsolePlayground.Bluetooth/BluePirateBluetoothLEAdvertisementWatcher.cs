@@ -122,25 +122,29 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
 
         public void StartListening()
         {
-            if (Listening)
-                return;
+            lock (mThreadLock)
+            {
+                if (Listening)
+                    return;
 
-            mWatcher.Start();
+                mWatcher.Start();
+            }
 
             StartedListening();
         }
 
         public void StopsListening()
         {
-            if (!Listening)
-                return;
 
-            mWatcher.Stop();
-
-            lock (mThreadLock)
+            lock (mThreadLock) 
             {
+                if (!Listening)
+                    return;
+                mWatcher.Stop();
+
                 mDiscoveredDevices.Clear();
             }
+            
         }
     }
 }
