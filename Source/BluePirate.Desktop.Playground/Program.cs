@@ -8,7 +8,7 @@ namespace BluePirate.Desktop.Playground
         static void Main(string[] args)
         {
             Console.WriteLine("Hello World!");
-            var watcher = new BluePirateBluetoothLEAdvertisementWatcher();
+            var watcher = new BluePirateBluetoothLEAdvertisementWatcher(new GattServiceIDs());
 
             //this sets us into the events
             watcher.StartedListening += () =>

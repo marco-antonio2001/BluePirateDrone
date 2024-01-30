@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using Windows.Devices.Bluetooth;
 using Windows.Devices.Bluetooth.Advertisement;
+using Windows.Devices.Bluetooth.GenericAttributeProfile;
 
 namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
 {
@@ -23,8 +26,10 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
 
         private readonly BluetoothLEAdvertisementWatcher mWatcher;
         //list of our discovred devices ** need to make thread safe 
-        private readonly Dictionary<ulong, BluePirateBluetoothLEDevice> mDiscoveredDevices = new Dictionary<ulong, BluePirateBluetoothLEDevice>();
+        private readonly Dictionary<string, BluePirateBluetoothLEDevice> mDiscoveredDevices = new Dictionary<string, BluePirateBluetoothLEDevice>();
         private readonly object mThreadLock = new object();
+        private readonly GattServiceIDs mGattServices;
+
         public bool Listening => mWatcher.Status == BluetoothLEAdvertisementWatcherStatus.Started;
         public int HeartBeatTimeout { get; set; } = 30;
 
@@ -56,53 +61,57 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
             }
         }
 
-        public BluePirateBluetoothLEAdvertisementWatcher()
+        public BluePirateBluetoothLEAdvertisementWatcher(GattServiceIDs gattIds)
         {
+            mGattServices = gattIds ?? throw new ArgumentNullException(nameof(gattIds)); 
+
             mWatcher = new BluetoothLEAdvertisementWatcher
             {
                 ScanningMode = BluetoothLEScanningMode.Active
             };
 
-            mWatcher.Received += WatcherAdvertisementReceived;
+            mWatcher.Received += WatcherAdvertisementReceivedAsync;
             mWatcher.Stopped += (watcher, e) =>
             {
                 StoppedListening();
             };
+            
         }
 
-        private void WatcherAdvertisementReceived(BluetoothLEAdvertisementWatcher sender, BluetoothLEAdvertisementReceivedEventArgs args)
+        private async void WatcherAdvertisementReceivedAsync(BluetoothLEAdvertisementWatcher sender, BluetoothLEAdvertisementReceivedEventArgs args)
         {
             //clean up timeout 
             CleanUpTimeouts();
 
-            BluePirateBluetoothLEDevice device = null;
+            //gets the ble device info
+            var device = await GetBluetoothLEDeviceAsync(args.BluetoothAddress,args.Timestamp,args.RawSignalStrengthInDBm);
 
-            var newDiscovery = !mDiscoveredDevices.ContainsKey(args.BluetoothAddress);
+            if (device == null)
+                return;
+
+
+
+            var newDiscovery = false;
+            string existingName = default(string);
+
+            //lock for thread safety 
+            lock (mThreadLock)
+            {
+                newDiscovery = !mDiscoveredDevices.ContainsKey(device.DeviceId);
+
+                if (!newDiscovery)
+                {
+                    existingName = mDiscoveredDevices[device.DeviceId].Name;
+                }
+            }
+
             //if already in dic but name is changed/discovered
-            var nameChanged = !newDiscovery && !string.IsNullOrEmpty(args.Advertisement.LocalName) && mDiscoveredDevices[args.BluetoothAddress].Name != args.Advertisement.LocalName;
+            var nameChanged = !newDiscovery && !string.IsNullOrEmpty(device.Name) && existingName != device.Name;
 
             lock (mThreadLock)
             {
-                var name = args.Advertisement.LocalName;
-
-                //if the new name is blank and we have a device
-                if(string.IsNullOrEmpty(name) && !newDiscovery)
-                {
-                    //prevent overriding actual name with null/blank
-                    name = mDiscoveredDevices[args.BluetoothAddress].Name;
-                }
-
-                //creating a new class off the device
-                device = new BluePirateBluetoothLEDevice
-                    (
-                        address: args.BluetoothAddress,
-                        name: name,
-                        broadCastTime: args.Timestamp,
-                        signalStrenghtDB: args.RawSignalStrengthInDBm
-                    );
-
                 //add or update the device to the dictionary
-                mDiscoveredDevices[args.BluetoothAddress] = device;
+                mDiscoveredDevices[device.DeviceId] = device;
             }
 
             DeviceDiscovered(device);
@@ -118,6 +127,41 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
                 NewDeviceDiscovered(device);
             }
 
+        }
+
+        private async Task<BluePirateBluetoothLEDevice> GetBluetoothLEDeviceAsync(ulong address, DateTimeOffset broadCastTime, short signalStrenghtDB)
+        {
+            var device = await BluetoothLEDevice.FromBluetoothAddressAsync(address);
+
+            if (device == null)
+                return null;
+            
+
+            //get gatt services that are available 
+            var gatt = await device.GetGattServicesAsync();
+
+            //if we have any services
+            if (gatt.Status == GattCommunicationStatus.Success)
+            {
+                //loop wach gatt service
+                foreach(var service in gatt.Services)
+                {
+                    //contains the GATT service ID we can use to connect/ extract data
+                    //TODO connect to device
+                    var gattServiceId = service.Uuid;
+                }
+            }
+            return new BluePirateBluetoothLEDevice
+                (
+                    deviceId: device.DeviceId,
+                    address: device.BluetoothAddress,
+                    name: device.Name,
+                    broadCastTime: broadCastTime,
+                    signalStrenghtDB: signalStrenghtDB,
+                    connected: device.ConnectionStatus == BluetoothConnectionStatus.Connected,
+                    canPair: device.DeviceInformation.Pairing.CanPair,
+                    paired: device.DeviceInformation.Pairing.IsPaired
+                );
         }
 
         public void StartListening()
