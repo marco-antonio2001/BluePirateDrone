@@ -7,13 +7,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{4670874E-1
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Desktop", "Desktop", "{7017E4FC-50BC-48DE-B89D-D577B5956789}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BluePirate.Desktop.WindowsApp", "Source\BluePirate.Desktop.ConsolePlayground\BluePirate.Desktop.WindowsApp.csproj", "{B4F60D98-2365-4013-9041-9E0584792281}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BluePirate.Core", "Source\BluePirate.Core\BluePirate.Core.csproj", "{A5648D14-8FA2-4CA1-91BC-3235C3020EDE}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BluePirate.Desktop.ConsolePlayground.Bluetooth", "Source\BluePirate.Desktop.ConsolePlayground.Bluetooth\BluePirate.Desktop.ConsolePlayground.Bluetooth.csproj", "{29CA919C-EFB9-4B2E-9E06-80A824CACA7B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BluePirate.Desktop.Playground", "Source\BluePirate.Desktop.Playground\BluePirate.Desktop.Playground.csproj", "{CD2F7C3F-460C-4DBB-801D-531B00981115}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BluePirate.Desktop.Playground", "Source\BluePirate.Desktop.Playground\BluePirate.Desktop.Playground.csproj", "{CD2F7C3F-460C-4DBB-801D-531B00981115}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BluePirate.Desktop.WindowsApp", "Source\BluePirate.Desktop.WindowsApp\BluePirate.Desktop.WindowsApp.csproj", "{A81B1F55-811F-45EE-AF61-DD12B8061541}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BluePirate.Desktop.WindowsApp.Core", "Source\BluePirate.Desktop.WindowsApp.Core\BluePirate.Desktop.WindowsApp.Core.csproj", "{178A12EB-6EBE-4036-BD80-8F6C67E545F9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,10 +23,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{B4F60D98-2365-4013-9041-9E0584792281}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B4F60D98-2365-4013-9041-9E0584792281}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B4F60D98-2365-4013-9041-9E0584792281}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B4F60D98-2365-4013-9041-9E0584792281}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A5648D14-8FA2-4CA1-91BC-3235C3020EDE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A5648D14-8FA2-4CA1-91BC-3235C3020EDE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A5648D14-8FA2-4CA1-91BC-3235C3020EDE}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -37,15 +35,24 @@ Global
 		{CD2F7C3F-460C-4DBB-801D-531B00981115}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CD2F7C3F-460C-4DBB-801D-531B00981115}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CD2F7C3F-460C-4DBB-801D-531B00981115}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A81B1F55-811F-45EE-AF61-DD12B8061541}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A81B1F55-811F-45EE-AF61-DD12B8061541}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A81B1F55-811F-45EE-AF61-DD12B8061541}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A81B1F55-811F-45EE-AF61-DD12B8061541}.Release|Any CPU.Build.0 = Release|Any CPU
+		{178A12EB-6EBE-4036-BD80-8F6C67E545F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{178A12EB-6EBE-4036-BD80-8F6C67E545F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{178A12EB-6EBE-4036-BD80-8F6C67E545F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{178A12EB-6EBE-4036-BD80-8F6C67E545F9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{B4F60D98-2365-4013-9041-9E0584792281} = {7017E4FC-50BC-48DE-B89D-D577B5956789}
 		{A5648D14-8FA2-4CA1-91BC-3235C3020EDE} = {4670874E-1B2C-4B08-98F4-9B70D6312AF8}
 		{29CA919C-EFB9-4B2E-9E06-80A824CACA7B} = {7017E4FC-50BC-48DE-B89D-D577B5956789}
 		{CD2F7C3F-460C-4DBB-801D-531B00981115} = {7017E4FC-50BC-48DE-B89D-D577B5956789}
+		{A81B1F55-811F-45EE-AF61-DD12B8061541} = {7017E4FC-50BC-48DE-B89D-D577B5956789}
+		{178A12EB-6EBE-4036-BD80-8F6C67E545F9} = {7017E4FC-50BC-48DE-B89D-D577B5956789}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DF7EFD3C-E3A2-4BB0-9F1E-086870357808}

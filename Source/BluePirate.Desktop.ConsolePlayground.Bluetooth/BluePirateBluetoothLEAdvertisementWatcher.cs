@@ -93,6 +93,7 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
 
             var newDiscovery = false;
             string existingName = default(string);
+            bool nameChanged;
 
             //lock for thread safety 
             lock (mThreadLock)
@@ -103,13 +104,13 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
                 {
                     existingName = mDiscoveredDevices[device.DeviceId].Name;
                 }
-            }
 
-            //if already in dic but name is changed/discovered
-            var nameChanged = !newDiscovery && !string.IsNullOrEmpty(device.Name) && existingName != device.Name;
 
-            lock (mThreadLock)
-            {
+                //if already in dic but name is changed/discovered
+                nameChanged = !newDiscovery && !string.IsNullOrEmpty(device.Name) && existingName != device.Name;
+                if (!Listening)
+                    return;
+
                 //add or update the device to the dictionary
                 mDiscoveredDevices[device.DeviceId] = device;
             }
@@ -131,7 +132,7 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
 
         private async Task<BluePirateBluetoothLEDevice> GetBluetoothLEDeviceAsync(ulong address, DateTimeOffset broadCastTime, short signalStrenghtDB)
         {
-            var device = await BluetoothLEDevice.FromBluetoothAddressAsync(address);
+            using var device = await BluetoothLEDevice.FromBluetoothAddressAsync(address);
 
             if (device == null)
                 return null;
