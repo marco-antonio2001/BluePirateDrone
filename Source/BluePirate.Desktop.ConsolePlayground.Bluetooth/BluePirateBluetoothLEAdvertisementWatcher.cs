@@ -38,7 +38,7 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
 
         public DroneAHRS droneAHRS = new DroneAHRS();
         public bool Listening => mWatcher.Status == BluetoothLEAdvertisementWatcherStatus.Started;
-        public int HeartBeatTimeout { get; set; } = 30;
+        public int HeartBeatTimeout { get; set; } = 120;
 
         public IReadOnlyCollection<BluePirateBluetoothLEDevice> DiscoredDevices 
         {
@@ -87,6 +87,7 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
 
         private async void WatcherAdvertisementReceivedAsync(BluetoothLEAdvertisementWatcher sender, BluetoothLEAdvertisementReceivedEventArgs args)
         {
+            //Console.WriteLine("advert received");
             //clean up timeout 
             CleanUpTimeouts();
 
@@ -94,8 +95,12 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
             //gets the ble device info
             var device = await GetBluetoothLEDeviceAsync(args.BluetoothAddress,args.Timestamp,args.RawSignalStrengthInDBm);
 
-            if (device == null)
+            if (device == null) 
+            {
+                //Console.WriteLine("Device Null could not get more information connect");
                 return;
+            }
+                
 
 
 
@@ -144,10 +149,20 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
 
             if (device == null)
                 return null;
-            
+
 
             //get gatt services that are available 
-            var gatt = await device.GetGattServicesAsync();
+            GattDeviceServicesResult gatt;
+            try
+            {
+                gatt = await device.GetGattServicesAsync();
+            }
+            catch (Exception)
+            {
+                //Console.WriteLine("Exception Found");
+                throw;
+            }
+
             IReadOnlyList<GattDeviceService> gattService = null;
             //if we have any services
             if (gatt.Status == GattCommunicationStatus.Success)
@@ -189,7 +204,7 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
                 if (!Listening)
                     return;
                 mWatcher.Stop();
-
+                //Console.WriteLine("Stopped Listining");
                 mDiscoveredDevices.Clear();
             }
             

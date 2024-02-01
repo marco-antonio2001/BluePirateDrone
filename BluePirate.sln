@@ -13,10 +13,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BluePirate.Desktop.ConsoleP
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BluePirate.Desktop.Playground", "Source\BluePirate.Desktop.Playground\BluePirate.Desktop.Playground.csproj", "{CD2F7C3F-460C-4DBB-801D-531B00981115}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BluePirate.Desktop.WindowsApp", "Source\BluePirate.Desktop.WindowsApp\BluePirate.Desktop.WindowsApp.csproj", "{A81B1F55-811F-45EE-AF61-DD12B8061541}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BluePirate.Desktop.WindowsApp.Core", "Source\BluePirate.Desktop.WindowsApp.Core\BluePirate.Desktop.WindowsApp.Core.csproj", "{178A12EB-6EBE-4036-BD80-8F6C67E545F9}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,14 +31,6 @@ Global
 		{CD2F7C3F-460C-4DBB-801D-531B00981115}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CD2F7C3F-460C-4DBB-801D-531B00981115}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CD2F7C3F-460C-4DBB-801D-531B00981115}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A81B1F55-811F-45EE-AF61-DD12B8061541}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A81B1F55-811F-45EE-AF61-DD12B8061541}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A81B1F55-811F-45EE-AF61-DD12B8061541}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A81B1F55-811F-45EE-AF61-DD12B8061541}.Release|Any CPU.Build.0 = Release|Any CPU
-		{178A12EB-6EBE-4036-BD80-8F6C67E545F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{178A12EB-6EBE-4036-BD80-8F6C67E545F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{178A12EB-6EBE-4036-BD80-8F6C67E545F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{178A12EB-6EBE-4036-BD80-8F6C67E545F9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -51,8 +39,6 @@ Global
 		{A5648D14-8FA2-4CA1-91BC-3235C3020EDE} = {4670874E-1B2C-4B08-98F4-9B70D6312AF8}
 		{29CA919C-EFB9-4B2E-9E06-80A824CACA7B} = {7017E4FC-50BC-48DE-B89D-D577B5956789}
 		{CD2F7C3F-460C-4DBB-801D-531B00981115} = {7017E4FC-50BC-48DE-B89D-D577B5956789}
-		{A81B1F55-811F-45EE-AF61-DD12B8061541} = {7017E4FC-50BC-48DE-B89D-D577B5956789}
-		{178A12EB-6EBE-4036-BD80-8F6C67E545F9} = {7017E4FC-50BC-48DE-B89D-D577B5956789}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DF7EFD3C-E3A2-4BB0-9F1E-086870357808}
