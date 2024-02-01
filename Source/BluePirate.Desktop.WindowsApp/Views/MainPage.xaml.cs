@@ -11,4 +11,9 @@ public partial class MainPage : Page
         InitializeComponent();
         DataContext = viewModel;
     }
+
+    private void button_Click(object sender, System.Windows.RoutedEventArgs e)
+    {
+
+    }
 }

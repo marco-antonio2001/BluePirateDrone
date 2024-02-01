@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Windows.Devices.Bluetooth;
 using Windows.Devices.Bluetooth.Advertisement;
 using Windows.Devices.Bluetooth.GenericAttributeProfile;
+using Windows.Storage.Streams;
 
 namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
 {
@@ -24,12 +27,16 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
         //fired when a device is removed for timing out
         public event Action<BluePirateBluetoothLEDevice> DeviceTimedout = (device) => { };
 
+        //fired when a device is removed for timing out
+        public event Action<DroneAHRS> SubscribedValueChanged = (droneAHRS) => { };
+
         private readonly BluetoothLEAdvertisementWatcher mWatcher;
         //list of our discovred devices ** need to make thread safe 
         private readonly Dictionary<string, BluePirateBluetoothLEDevice> mDiscoveredDevices = new Dictionary<string, BluePirateBluetoothLEDevice>();
         private readonly object mThreadLock = new object();
         private readonly GattServiceIDs mGattServices;
 
+        public DroneAHRS droneAHRS = new DroneAHRS();
         public bool Listening => mWatcher.Status == BluetoothLEAdvertisementWatcherStatus.Started;
         public int HeartBeatTimeout { get; set; } = 30;
 
@@ -82,6 +89,7 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
         {
             //clean up timeout 
             CleanUpTimeouts();
+
 
             //gets the ble device info
             var device = await GetBluetoothLEDeviceAsync(args.BluetoothAddress,args.Timestamp,args.RawSignalStrengthInDBm);
@@ -140,17 +148,11 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
 
             //get gatt services that are available 
             var gatt = await device.GetGattServicesAsync();
-
+            IReadOnlyList<GattDeviceService> gattService = null;
             //if we have any services
             if (gatt.Status == GattCommunicationStatus.Success)
             {
-                //loop wach gatt service
-                foreach(var service in gatt.Services)
-                {
-                    //contains the GATT service ID we can use to connect/ extract data
-                    //TODO connect to device
-                    var gattServiceId = service.Uuid;
-                }
+                gattService = gatt.Services;
             }
             return new BluePirateBluetoothLEDevice
                 (
@@ -161,7 +163,8 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
                     signalStrenghtDB: signalStrenghtDB,
                     connected: device.ConnectionStatus == BluetoothConnectionStatus.Connected,
                     canPair: device.DeviceInformation.Pairing.CanPair,
-                    paired: device.DeviceInformation.Pairing.IsPaired
+                    paired: device.DeviceInformation.Pairing.IsPaired,
+                    gattServices: gattService
                 );
         }
 
@@ -191,5 +194,77 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
             }
             
         }
+        public async Task PairToDeviceAsync(string deviceId)
+        {
+            using var device = await BluetoothLEDevice.FromIdAsync(deviceId);
+
+            if (device == null)
+                throw new ArgumentNullException("Failed to get information from device") ;
+
+            device.DeviceInformation.Pairing.Custom.PairingRequested += (sender, args) =>
+            {
+                var paringKind = args.PairingKind;
+                args.Accept();
+            };
+
+            var result = await device.DeviceInformation.Pairing.Custom.PairAsync(Windows.Devices.Enumeration.DevicePairingKinds.None);
+        }
+
+        public async Task SubscribeToCharacteristicsAsync(string deviceId, string serviceUuid, string characteristicUuid)
+        {
+            using var device = await BluetoothLEDevice.FromIdAsync(deviceId);
+            if (device == null)
+                throw new ArgumentNullException("Failed to get information from device");
+            var serviceResults = await device.GetGattServicesAsync();
+            //filter and find first service with the specified UUID
+            GattDeviceService service = serviceResults.Services.FirstOrDefault(s => s.Uuid.ToString().Substring(4, 4) == serviceUuid);
+
+            if (service == null)
+                return;
+
+            GattCharacteristicsResult characteristicsResult = await service.GetCharacteristicsAsync();
+            if (characteristicsResult.Status == GattCommunicationStatus.Success)
+            {
+                var characteristic = characteristicsResult.Characteristics.FirstOrDefault(c => c.Uuid.ToString().Substring(4, 4) == characteristicUuid);
+                if (characteristic == null) return;
+                GattCharacteristicProperties properties = characteristic.CharacteristicProperties;
+
+                if (properties.HasFlag(GattCharacteristicProperties.Notify))
+                {
+                    Console.WriteLine("This characteristic has notify");
+                    GattCommunicationStatus status = await characteristic.WriteClientCharacteristicConfigurationDescriptorAsync(
+                    GattClientCharacteristicConfigurationDescriptorValue.Notify);
+                    if (status == GattCommunicationStatus.Success)
+                    {
+                        characteristic.ValueChanged += Characteristic_ValueChanged;
+                        // Server has been informed of clients interest.
+                    }
+                }
+
+            }
+
+        }
+
+        private void Characteristic_ValueChanged(GattCharacteristic sender, GattValueChangedEventArgs args)
+        {
+            //every time a characteristic changes
+            var reader = DataReader.FromBuffer(args.CharacteristicValue);
+            byte[] bff = new byte[32];
+            reader.ReadBytes(bff);
+
+            IntPtr ptPoit = Marshal.AllocHGlobal(32);
+            Marshal.Copy(bff, 0, ptPoit, 32);
+            droneAHRS = (DroneAHRS)Marshal.PtrToStructure(ptPoit, typeof(DroneAHRS));
+            Marshal.FreeHGlobal(ptPoit);
+            if (droneAHRS == null)
+                return;
+            SubscribedValueChanged(droneAHRS);
+            
+
+
+        }
+
     }
+    
+
 }
