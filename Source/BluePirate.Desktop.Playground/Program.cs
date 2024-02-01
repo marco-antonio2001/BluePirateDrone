@@ -42,13 +42,13 @@ namespace BluePirate.Desktop.Playground
                     watcher.DeviceNameChanged += (device) =>
                     {
                         Console.ForegroundColor = ConsoleColor.Yellow;
-                        //Console.WriteLine($"Device Name Changed {device}");
+                        Console.WriteLine($"Device Name Changed {device}");
                     };
 
                     watcher.DeviceTimedout += (device) =>
                     {
-                        //Console.ForegroundColor = ConsoleColor.Red;
-                        //Console.WriteLine($"Device Timed out {device}");
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine($"Device Timed out {device}");
                     };
 
                     watcher.SubscribedValueChanged += (droneAHRS) =>
