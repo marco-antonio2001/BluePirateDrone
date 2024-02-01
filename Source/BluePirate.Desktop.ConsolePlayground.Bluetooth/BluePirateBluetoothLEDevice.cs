@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Windows.Devices.Bluetooth.GenericAttributeProfile;
 
 namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
 {
@@ -11,18 +12,29 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
         public ulong Address { get; }
         public string Name { get; }
         public short SignalStrenghtDB { get; }
+        public bool Connected { get; }
+        public bool CanPair { get; }
+        public bool Paired { get; }
+        public string DeviceId { get; }
 
-        public BluePirateBluetoothLEDevice(DateTimeOffset broadCastTime, ulong address, string name, short signalStrenghtDB)
+        public IReadOnlyList<GattDeviceService> Services;
+
+        public BluePirateBluetoothLEDevice(DateTimeOffset broadCastTime, ulong address, string name, short signalStrenghtDB, bool connected, bool canPair, bool paired, string deviceId, IReadOnlyList<GattDeviceService> gattServices)
         {
             BroadCastTime = broadCastTime;
             Address = address;
             Name = name;
             SignalStrenghtDB = signalStrenghtDB;
+            Connected = connected;
+            CanPair = canPair;
+            Paired = paired;
+            DeviceId = deviceId;
+            Services = gattServices;
         }
 
         public override string ToString()
         {
-            return $"{(string.IsNullOrEmpty(Name) ? "[No Name]" : Name) }\t{Address}\t({SignalStrenghtDB})";
+            return $"{(string.IsNullOrEmpty(Name) ? "[No Name]" : Name) }[{DeviceId}]({SignalStrenghtDB})";
         }
     }
 }
