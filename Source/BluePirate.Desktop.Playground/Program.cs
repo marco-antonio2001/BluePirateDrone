@@ -7,10 +7,10 @@ namespace BluePirate.Desktop.Playground
 {
     internal class Program
     {
-       
+        
         static void Main(string[] args)
         {
-            
+
             var tcs = new TaskCompletionSource<bool>();
 
             Task.Run(async () => 

@@ -14,6 +14,8 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
 
     public class BluePirateBluetoothLEAdvertisementWatcher
     {
+        #region events
+
         //fired when watcher stops listening
         public event Action StoppedListening = () => { };
         //fired when watcher starts listening
@@ -27,8 +29,9 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
         //fired when a device is removed for timing out
         public event Action<BluePirateBluetoothLEDevice> DeviceTimedout = (device) => { };
 
-        //fired when a device is removed for timing out
+        //fired when a a new value is available
         public event Action<DroneAHRS> SubscribedValueChanged = (droneAHRS) => { };
+        #endregion
 
         private readonly BluetoothLEAdvertisementWatcher mWatcher;
         //list of our discovred devices ** need to make thread safe 
@@ -38,7 +41,7 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
 
         public DroneAHRS droneAHRS = new DroneAHRS();
         public bool Listening => mWatcher.Status == BluetoothLEAdvertisementWatcherStatus.Started;
-        public int HeartBeatTimeout { get; set; } = 120;
+        public int HeartBeatTimeout { get; set; } = 30;
 
         public IReadOnlyCollection<BluePirateBluetoothLEDevice> DiscoredDevices 
         {
@@ -178,8 +181,7 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
                     signalStrenghtDB: signalStrenghtDB,
                     connected: device.ConnectionStatus == BluetoothConnectionStatus.Connected,
                     canPair: device.DeviceInformation.Pairing.CanPair,
-                    paired: device.DeviceInformation.Pairing.IsPaired,
-                    gattServices: gattService
+                    paired: device.DeviceInformation.Pairing.IsPaired
                 );
         }
 
@@ -204,7 +206,6 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
                 if (!Listening)
                     return;
                 mWatcher.Stop();
-                //Console.WriteLine("Stopped Listining");
                 mDiscoveredDevices.Clear();
             }
             
@@ -274,8 +275,6 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
             if (droneAHRS == null)
                 return;
             SubscribedValueChanged(droneAHRS);
-            
-
 
         }
 
