@@ -43,6 +43,8 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
         public bool Listening => mWatcher.Status == BluetoothLEAdvertisementWatcherStatus.Started;
         public int HeartBeatTimeout { get; set; } = 30;
 
+        public GattCharacteristic Characteristic { get; set; }
+
         public IReadOnlyCollection<BluePirateBluetoothLEDevice> DiscoredDevices 
         {
             get 
@@ -166,12 +168,12 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
                 throw;
             }
 
-            IReadOnlyList<GattDeviceService> gattService = null;
+/*            IReadOnlyList<GattDeviceService> gattService = null;
             //if we have any services
             if (gatt.Status == GattCommunicationStatus.Success)
             {
                 gattService = gatt.Services;
-            }
+            }*/
             return new BluePirateBluetoothLEDevice
                 (
                     deviceId: device.DeviceId,
@@ -221,10 +223,13 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
             {
                 var paringKind = args.PairingKind;
                 args.Accept();
+                Console.WriteLine($"<T> {args}");
             };
 
-            var result = await device.DeviceInformation.Pairing.Custom.PairAsync(Windows.Devices.Enumeration.DevicePairingKinds.None);
+            var result = await device.DeviceInformation.Pairing.PairAsync();
         }
+
+
 
         public async Task SubscribeToCharacteristicsAsync(string deviceId, string serviceUuid, string characteristicUuid)
         {
@@ -241,18 +246,19 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
             GattCharacteristicsResult characteristicsResult = await service.GetCharacteristicsAsync();
             if (characteristicsResult.Status == GattCommunicationStatus.Success)
             {
-                var characteristic = characteristicsResult.Characteristics.FirstOrDefault(c => c.Uuid.ToString().Substring(4, 4) == characteristicUuid);
-                if (characteristic == null) return;
-                GattCharacteristicProperties properties = characteristic.CharacteristicProperties;
+                Characteristic = characteristicsResult.Characteristics.FirstOrDefault(c => c.Uuid.ToString().Substring(4, 4) == characteristicUuid);
+                if (Characteristic == null) return;
+                GattCharacteristicProperties properties = Characteristic.CharacteristicProperties;
 
                 if (properties.HasFlag(GattCharacteristicProperties.Notify))
                 {
                     Console.WriteLine("This characteristic has notify");
-                    GattCommunicationStatus status = await characteristic.WriteClientCharacteristicConfigurationDescriptorAsync(
+                    GattCommunicationStatus status = await Characteristic.WriteClientCharacteristicConfigurationDescriptorAsync(
                     GattClientCharacteristicConfigurationDescriptorValue.Notify);
+                    
                     if (status == GattCommunicationStatus.Success)
                     {
-                        characteristic.ValueChanged += Characteristic_ValueChanged;
+                        Characteristic.ValueChanged += Characteristic_ValueChanged;
                         // Server has been informed of clients interest.
                     }
                 }
@@ -263,18 +269,21 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
 
         private void Characteristic_ValueChanged(GattCharacteristic sender, GattValueChangedEventArgs args)
         {
-            //every time a characteristic changes
-            var reader = DataReader.FromBuffer(args.CharacteristicValue);
-            byte[] bff = new byte[32];
-            reader.ReadBytes(bff);
+            lock(mThreadLock)
+            {
+                //every time a characteristic changes
+                var reader = DataReader.FromBuffer(args.CharacteristicValue);
+                byte[] bff = new byte[32];
+                reader.ReadBytes(bff);
 
-            IntPtr ptPoit = Marshal.AllocHGlobal(32);
-            Marshal.Copy(bff, 0, ptPoit, 32);
-            droneAHRS = (DroneAHRS)Marshal.PtrToStructure(ptPoit, typeof(DroneAHRS));
-            Marshal.FreeHGlobal(ptPoit);
-            if (droneAHRS == null)
-                return;
-            SubscribedValueChanged(droneAHRS);
+                IntPtr ptPoit = Marshal.AllocHGlobal(32);
+                Marshal.Copy(bff, 0, ptPoit, 32);
+                droneAHRS = (DroneAHRS)Marshal.PtrToStructure(ptPoit, typeof(DroneAHRS));
+                Marshal.FreeHGlobal(ptPoit);
+                if (droneAHRS == null)
+                    return;
+                SubscribedValueChanged(droneAHRS);
+            }
 
         }
 

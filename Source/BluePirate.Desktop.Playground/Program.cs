@@ -89,6 +89,7 @@ namespace BluePirate.Desktop.Playground
                             //try and pair
                             try
                             {
+                                //await watcher.PairToDeviceAsync(droneDevice.DeviceId);
                                 await watcher.SubscribeToCharacteristicsAsync(droneDevice.DeviceId,"ab30","ab31");
                             }
                             catch (Exception e)

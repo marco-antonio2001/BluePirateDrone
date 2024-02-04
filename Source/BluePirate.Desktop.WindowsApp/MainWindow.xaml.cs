@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -65,8 +66,10 @@ namespace BluePirate.Desktop.WindowsApp
         private void btnConnectToSelectedBLEDevice_Click(object sender, RoutedEventArgs e)
         {
             //Connect/get Gatt services of whatever the selected device is
+            if (viewModel.SelectedKeyValuePair == null)
+                return;
 
-            var devicekvp = viewModel.SelectedKeyValuePair;
+            BluePirateBluetoothLEDevice devicekvp = viewModel.SelectedKeyValuePair.Value;
 
             //null gaurd
             if (devicekvp == null)
@@ -78,7 +81,9 @@ namespace BluePirate.Desktop.WindowsApp
             {
                 try
                 {
-                    await watcher.SubscribeToCharacteristicsAsync(devicekvp.Value.DeviceId, "ab30", "ab31");
+                    Debug.WriteLine($"Attempting to connect to device {devicekvp.DeviceId}");
+                    await watcher.SubscribeToCharacteristicsAsync(devicekvp.DeviceId, "ab30", "ab31");
+                    Debug.WriteLine($"Device connected: {devicekvp.Connected}");
                 }
                 finally
                 {

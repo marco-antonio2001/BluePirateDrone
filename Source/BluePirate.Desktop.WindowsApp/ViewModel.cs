@@ -17,7 +17,6 @@ namespace BluePirate.Desktop.WindowsApp
         private float _roll;
         private float _pitch;
 
-
         public ObservableCollection<KeyValuePairModel> KeyValuePairs
         {
             get { return _keyValuePairs; }
@@ -57,6 +56,7 @@ namespace BluePirate.Desktop.WindowsApp
                 }
             }
         }
+
 
         public float DroneRoll
         {
