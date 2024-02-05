@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Runtime.InteropServices;
@@ -155,7 +156,13 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
             if (device == null)
                 return null;
 
-
+            if (device.DeviceInformation.Name.Contains("DroneTest")) 
+            {
+                Console.WriteLine("Found drone test");
+                var access = await device.RequestAccessAsync();
+                var test = await device.GetGattServicesAsync();
+                Console.WriteLine("Found services");
+            }
             //get gatt services that are available 
             GattDeviceServicesResult gatt;
             try
@@ -229,8 +236,78 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
             var result = await device.DeviceInformation.Pairing.PairAsync();
         }
 
+        //get  all service in a device
+        public async Task<GattDeviceServicesResult> GetResultOfDeviceServicesAsync(string deviceId)
+        {
+            using var device = await BluetoothLEDevice.FromIdAsync(deviceId);
+            if (device == null)
+                throw new ArgumentNullException("Failed to get information from device");
+            var serviceResults = await device.GetGattServicesAsync();
+            return serviceResults;
+        }
+
+        //get all char in a service
+        public async Task<GattCharacteristicsResult> GetResultOfServiceCharacteristicsAsync(GattDeviceService service)
+        {
+            
+            using var device = await BluetoothLEDevice.FromIdAsync(service.Session.DeviceId.Id);
+            var gattServices = await device.GetGattServicesAsync();
+            
+            //TODO: handle when service uuid returns more than one serives
+            var gattService = gattServices.Services.FirstOrDefault(s => s.Uuid == service.Uuid);
 
 
+
+            GattCharacteristicsResult characteristicsResult = await gattService.GetCharacteristicsAsync();
+            if (characteristicsResult.Status == GattCommunicationStatus.AccessDenied)
+            {
+                var req = await gattService.RequestAccessAsync();
+                Debug.WriteLine($"Requesting access to service : {req} Trying again....");
+                characteristicsResult = await gattService.GetCharacteristicsAsync();
+            }
+            Debug.WriteLine($"{characteristicsResult.Status}");
+
+
+            if (characteristicsResult == null)
+                return null;
+
+            return characteristicsResult;
+        }
+
+        //get device service by UUID
+        public async Task<GattDeviceService> GetGattServiceByUUIDAsync(string deviceId,string uuid)
+        {
+            using var device = await BluetoothLEDevice.FromIdAsync(deviceId);
+            if (device == null)
+                throw new ArgumentNullException("Failed to get information from device");
+            var serviceResults = await device.GetGattServicesAsync();
+            //filter and find first service with the specified UUID
+            GattDeviceService service = serviceResults.Services.FirstOrDefault(s => s.Uuid.ToString().Substring(4, 4) == uuid);
+
+            if (service == null)
+                return null;
+
+            return service;
+        }
+
+        //gets service gatt char by uui ... returns null if specified char is not found 
+        public async Task<GattCharacteristic> GetGattCharacteristicAsync(GattDeviceService service, string uuid)
+        {
+            GattCharacteristicsResult characteristicsResult = await service.GetCharacteristicsAsync();
+            if (characteristicsResult.Status == GattCommunicationStatus.Success)
+            {
+                var characteristic = characteristicsResult.Characteristics.FirstOrDefault(c => c.Uuid.ToString().Substring(4, 4) == uuid);
+                if (Characteristic == null) 
+                    return null;
+
+                return characteristic;
+            }
+
+            return null;
+        }
+
+
+        //TODO: break down and fix need to subscribe in a higher module
         public async Task SubscribeToCharacteristicsAsync(string deviceId, string serviceUuid, string characteristicUuid)
         {
             using var device = await BluetoothLEDevice.FromIdAsync(deviceId);
@@ -240,10 +317,14 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
             //filter and find first service with the specified UUID
             GattDeviceService service = serviceResults.Services.FirstOrDefault(s => s.Uuid.ToString().Substring(4, 4) == serviceUuid);
 
+            foreach (var serviceResult in serviceResults.Services)
+            {
+                Debug.WriteLine(serviceResult.Uuid);
+            }
             if (service == null)
                 return;
 
-            GattCharacteristicsResult characteristicsResult = await service.GetCharacteristicsAsync();
+/*            GattCharacteristicsResult characteristicsResult = await service.GetCharacteristicsAsync();
             if (characteristicsResult.Status == GattCommunicationStatus.Success)
             {
                 Characteristic = characteristicsResult.Characteristics.FirstOrDefault(c => c.Uuid.ToString().Substring(4, 4) == characteristicUuid);
@@ -263,7 +344,7 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
                     }
                 }
 
-            }
+            }*/
 
         }
 

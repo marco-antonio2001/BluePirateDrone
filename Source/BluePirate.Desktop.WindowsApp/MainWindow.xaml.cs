@@ -1,4 +1,5 @@
 ﻿using BluePirate.Desktop.ConsolePlayground.Bluetooth;
+using BluePirate.Desktop.WindowsApp.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -15,6 +16,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Windows.Devices.Bluetooth.GenericAttributeProfile;
 
 namespace BluePirate.Desktop.WindowsApp
 {
@@ -81,6 +83,13 @@ namespace BluePirate.Desktop.WindowsApp
             {
                 try
                 {
+                    //return all services for device
+                    var rst = await watcher.GetResultOfDeviceServicesAsync(devicekvp.DeviceId);
+
+                    if (rst != null)
+                        viewModel.GattServices = new ObservableCollection<GattServiceKVP>(rst.Services.Select(kvp => new GattServiceKVP { Key = kvp.Uuid.ToString(), Value = kvp }));
+
+
                     Debug.WriteLine($"Attempting to connect to device {devicekvp.DeviceId}");
                     await watcher.SubscribeToCharacteristicsAsync(devicekvp.DeviceId, "ab30", "ab31");
                     Debug.WriteLine($"Device connected: {devicekvp.Connected}");
@@ -95,6 +104,45 @@ namespace BluePirate.Desktop.WindowsApp
             });
 
             tcs.Task.Wait();
+        }
+
+        private void listViewDeviceGattServices_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            //when the user selects a service uuid from list get all of the service char 
+
+            //get service Chars
+            if (viewModel.SelectedGattServiceKVP == null)
+                return;
+
+            var tcs = new TaskCompletionSource<bool>();
+
+            Task.Run(async () =>
+            {
+                try
+                {
+                    //return all char for device
+                    var rst = await watcher.GetResultOfServiceCharacteristicsAsync(viewModel.SelectedGattServiceKVP.Value);
+                    if (rst.Status == GattCommunicationStatus.Success)
+                    {
+                        viewModel.GattCharacteristics = new ObservableCollection<GattCharacteristicKVP>(rst.Characteristics.Select(kvp => new GattCharacteristicKVP { Key = kvp.Uuid.ToString(), Value = kvp }));
+                    }
+                    Debug.WriteLine($"testing the connection");
+                }
+                catch (Exception e) 
+                {
+                    Debug.WriteLine(e);
+                }
+                finally
+                {
+                    //anything goes wrong exit task
+                    tcs.SetResult(false);
+
+                }
+                tcs.TrySetResult(true);
+            });
+
+            tcs.Task.Wait();
+
         }
     }
 }
