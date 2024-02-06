@@ -347,7 +347,7 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
             }*/
 
         }
-
+        
         private void Characteristic_ValueChanged(GattCharacteristic sender, GattValueChangedEventArgs args)
         {
             lock(mThreadLock)
@@ -367,8 +367,8 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
             }
 
         }
-
+       
     }
     
-
+   
 }
