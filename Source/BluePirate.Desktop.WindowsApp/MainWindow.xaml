@@ -1,0 +1,100 @@
+﻿<Window x:Class="BluePirate.Desktop.WindowsApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:BluePirate.Desktop.WindowsApp" d:DataContext="{d:DesignInstance Type=local:ViewModel}"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+    <Grid>
+        <Viewport3D Name="viewport3D1" Margin="0,10,0,-10">
+            <Viewport3D.Camera>
+                <PerspectiveCamera x:Name="camMain" Position="6 5 4" LookDirection="-6 -5 -4">
+                </PerspectiveCamera>
+            </Viewport3D.Camera>
+            <ModelVisual3D>
+                <ModelVisual3D.Content>
+                    <DirectionalLight x:Name="dirLightMain" Direction="-1,-1,-1">
+                    </DirectionalLight>
+                </ModelVisual3D.Content>
+            </ModelVisual3D>
+            <ModelVisual3D x:Name="MyModel">
+                <ModelVisual3D.Content>
+                    <GeometryModel3D>
+                        <GeometryModel3D.Geometry>
+                            <MeshGeometry3D x:Name="meshMain"
+                                Positions="0 0 0  1 0 0  0 1 0  1 1 0  0 0 1  1 0 1  0 1 1  1 1 1"
+                                TriangleIndices="2 3 1  2 1 0  7 1 3  7 5 1  6 5 7  6 4 5  6 2 0  2 0 4  2 7 3  2 6 7  0 1 5  0 5 4">
+                            </MeshGeometry3D>
+                        </GeometryModel3D.Geometry>
+                        <GeometryModel3D.Material>
+                            <DiffuseMaterial x:Name="matDiffuseMain">
+                                <DiffuseMaterial.Brush>
+                                    <SolidColorBrush Color="LightBlue"/>
+                                </DiffuseMaterial.Brush>
+                            </DiffuseMaterial>
+                        </GeometryModel3D.Material>
+                    </GeometryModel3D>
+                </ModelVisual3D.Content>
+                <ModelVisual3D.Transform>
+                    <Transform3DGroup>
+                        <RotateTransform3D CenterX="0.5" CenterY="0.5" CenterZ="0.5">
+                            <RotateTransform3D.Rotation>
+                                <AxisAngleRotation3D Axis="1 0 0" Angle="{Binding DroneRoll, UpdateSourceTrigger=PropertyChanged}" />
+                            </RotateTransform3D.Rotation>
+                        </RotateTransform3D>
+
+                        <RotateTransform3D CenterX="0.5" CenterY="0.5" CenterZ="0.5">
+                            <RotateTransform3D.Rotation>
+                                <AxisAngleRotation3D Axis="0 0 1" Angle="{Binding DronePitch, UpdateSourceTrigger=PropertyChanged}" />
+                            </RotateTransform3D.Rotation>
+                        </RotateTransform3D>
+                    </Transform3DGroup>
+                </ModelVisual3D.Transform>
+            </ModelVisual3D>
+        </Viewport3D>
+
+        <ListView x:Name="listViewDiscoveredDrones" ItemsSource="{Binding KeyValuePairs}" SelectedItem="{Binding SelectedKeyValuePair}" Grid.Row="0" Grid.Column="0"
+                  HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                  Width="243" Height="223" Margin="12,0,0,35"  SelectionChanged="listViewDiscoveredDrones_SelectionChanged" SelectionMode="Single">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="Key"
+                            DisplayMemberBinding="{Binding Key}" />
+                    <GridViewColumn Header="Name"
+                            DisplayMemberBinding="{Binding Value.SignalStrenghtDB}" />
+                    <GridViewColumn Header="DeviceId"
+                            DisplayMemberBinding="{Binding Value.DeviceId}" />
+                </GridView>
+            </ListView.View>
+        </ListView>
+        <Button x:Name="btnBLEStartListening" Content="Start Watcher" HorizontalAlignment="Left" Margin="12,76,0,0" VerticalAlignment="Top" Width="83" Click="btnBLEStartListening_Click"/>
+        <Button x:Name="btnBLEStopListening" Content="Stop Watcher" HorizontalAlignment="Left" Margin="172,76,0,0" VerticalAlignment="Top" Width="83" Click="btnBLEStopListening_Click"/>
+        <Button x:Name="btnConnectToSelectedBLEDevice" Content="Connect" HorizontalAlignment="Left" Margin="12,113,0,0" VerticalAlignment="Top" Width="83" Click="btnConnectToSelectedBLEDevice_Click"/>
+        <TextBox x:Name="txtBoxRoll" HorizontalAlignment="Left" Margin="282,68,0,0" TextWrapping="Wrap" Text="{Binding Path=DroneRoll, UpdateSourceTrigger=PropertyChanged, StringFormat={}{0:F2}}" VerticalAlignment="Top" Width="120"/>
+        <TextBox x:Name="txtBoxPitch" HorizontalAlignment="Left" Margin="426,68,0,0" TextWrapping="Wrap" Text="{Binding DronePitch, UpdateSourceTrigger=PropertyChanged,StringFormat={}{0:F2}}" VerticalAlignment="Top" Width="120"/>
+        <ListView x:Name="listViewServiceCharacteristics" ItemsSource="{Binding GattCharacteristics}" SelectedItem="{Binding SelectedGattCharacteristicsKVP}" Grid.Row="0" Grid.Column="0"
+            HorizontalAlignment="Left" VerticalAlignment="Bottom"
+            Width="240" Height="104" Margin="550,0,0,35"  SelectionMode="Single">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="uuid"
+                        DisplayMemberBinding="{Binding Key}" />
+                    <GridViewColumn Header="Desc"
+                        DisplayMemberBinding="{Binding Value.UserDescription}" />
+                </GridView>
+            </ListView.View>
+        </ListView>
+        <ListView x:Name="listViewDeviceGattServices" ItemsSource="{Binding GattServices}" SelectedItem="{Binding SelectedGattServiceKVP}" Grid.Column="0"
+            HorizontalAlignment="Left" VerticalAlignment="Center"
+            Width="240" Height="104" Margin="550,0,0,0" SelectionChanged="listViewDeviceGattServices_SelectionChanged"   SelectionMode="Single">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="Uuid"
+                        DisplayMemberBinding="{Binding Key}" />
+                </GridView>
+            </ListView.View>
+        </ListView>
+
+    </Grid>
+</Window>
