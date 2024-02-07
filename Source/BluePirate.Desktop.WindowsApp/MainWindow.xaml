@@ -70,7 +70,7 @@
         </ListView>
         <Button x:Name="btnBLEStartListening" Content="Start Watcher" HorizontalAlignment="Left" Margin="12,76,0,0" VerticalAlignment="Top" Width="83" Click="btnBLEStartListening_Click"/>
         <Button x:Name="btnBLEStopListening" Content="Stop Watcher" HorizontalAlignment="Left" Margin="172,76,0,0" VerticalAlignment="Top" Width="83" Click="btnBLEStopListening_Click"/>
-        <Button x:Name="btnConnectToSelectedBLEDevice" Content="Connect" HorizontalAlignment="Left" Margin="12,113,0,0" VerticalAlignment="Top" Width="83" Click="btnConnectToSelectedBLEDevice_Click"/>
+        <Button x:Name="btnConnectToSelectedBLEDevice" Content="Connect" HorizontalAlignment="Left" Margin="12,118,0,0" VerticalAlignment="Top" Width="83" Click="btnConnectToSelectedBLEDevice_Click"/>
         <TextBox x:Name="txtBoxRoll" HorizontalAlignment="Left" Margin="282,68,0,0" TextWrapping="Wrap" Text="{Binding Path=DroneRoll, UpdateSourceTrigger=PropertyChanged, StringFormat={}{0:F2}}" VerticalAlignment="Top" Width="120"/>
         <TextBox x:Name="txtBoxPitch" HorizontalAlignment="Left" Margin="426,68,0,0" TextWrapping="Wrap" Text="{Binding DronePitch, UpdateSourceTrigger=PropertyChanged,StringFormat={}{0:F2}}" VerticalAlignment="Top" Width="120"/>
         <ListView x:Name="listViewServiceCharacteristics" ItemsSource="{Binding GattCharacteristics}" SelectedItem="{Binding SelectedGattCharacteristicsKVP}" Grid.Row="0" Grid.Column="0"
@@ -95,6 +95,7 @@
                 </GridView>
             </ListView.View>
         </ListView>
+        <Button x:Name="btnWriteSetPointToDrone" Content="write" HorizontalAlignment="Left" Margin="172,113,0,0" VerticalAlignment="Top" Width="83" Click="btnWriteSetPointToDrone_Click"/>
 
     </Grid>
 </Window>

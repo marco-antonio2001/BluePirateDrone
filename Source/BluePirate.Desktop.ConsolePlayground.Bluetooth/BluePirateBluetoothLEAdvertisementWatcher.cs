@@ -34,6 +34,10 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
         public event Action<DroneAHRS> SubscribedValueChanged = (droneAHRS) => { };
         #endregion
 
+        private static readonly Guid AHRSServiceGuid = new Guid("F000AB30-0451-4000-B000-000000000000");
+        private static readonly Guid AHRSCharacteristicGuid = new Guid("F000AB31-0451-4000-B000-000000000000");
+        private static readonly Guid AHRSSetPointCharacteristicGuid = new Guid("F000AB32-0451-4000-B000-000000000000");
+
         private readonly BluetoothLEAdvertisementWatcher mWatcher;
         //list of our discovred devices ** need to make thread safe 
         private readonly Dictionary<string, BluePirateBluetoothLEDevice> mDiscoveredDevices = new Dictionary<string, BluePirateBluetoothLEDevice>();
@@ -41,10 +45,16 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
         private readonly GattServiceIDs mGattServices;
 
         public DroneAHRS droneAHRS = new DroneAHRS();
+        public DroneAHRS droneAHRSSetPoint = new DroneAHRS();
         public bool Listening => mWatcher.Status == BluetoothLEAdvertisementWatcherStatus.Started;
         public int HeartBeatTimeout { get; set; } = 30;
 
         public GattCharacteristic Characteristic { get; set; }
+
+        static public GattDeviceService mGattDeviceService;
+
+        public GattCharacteristicsResult mGattCharacteristicsResult { get; set; }
+
 
         public IReadOnlyCollection<BluePirateBluetoothLEDevice> DiscoredDevices 
         {
@@ -251,22 +261,24 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
         {
             
             using var device = await BluetoothLEDevice.FromIdAsync(service.Session.DeviceId.Id);
-            var gattServices = await device.GetGattServicesAsync();
+            var gattServices = await device.GetGattServicesAsync(BluetoothCacheMode.Uncached);
             
             //TODO: handle when service uuid returns more than one serives
-            var gattService = gattServices.Services.FirstOrDefault(s => s.Uuid == service.Uuid);
+            var gattService = gattServices.Services.FirstOrDefault(s => s.Uuid == mGattDeviceService.Uuid);
+            
 
-
-
-            GattCharacteristicsResult characteristicsResult = await gattService.GetCharacteristicsAsync();
+            var accessStatus = await gattService.RequestAccessAsync();
+            var sesStat = gattService.Session.SessionStatus;
+            Debug.WriteLine($"Requesting access to service : {accessStatus} , Session status {sesStat}");
+            GattCharacteristicsResult characteristicsResult = await gattService.GetCharacteristicsAsync(BluetoothCacheMode.Uncached);
+            
             if (characteristicsResult.Status == GattCommunicationStatus.AccessDenied)
             {
-                var req = await gattService.RequestAccessAsync();
-                Debug.WriteLine($"Requesting access to service : {req} Trying again....");
+                accessStatus = await gattService.RequestAccessAsync();
+                Debug.WriteLine($"Requesting access to service : {accessStatus} Trying again....");
                 characteristicsResult = await gattService.GetCharacteristicsAsync();
+                return mGattCharacteristicsResult;
             }
-            Debug.WriteLine($"{characteristicsResult.Status}");
-
 
             if (characteristicsResult == null)
                 return null;
@@ -274,48 +286,38 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
             return characteristicsResult;
         }
 
-        //get device service by UUID
-        public async Task<GattDeviceService> GetGattServiceByUUIDAsync(string deviceId,string uuid)
+        //write to characteristic 
+        public async Task WriteToCharacteristicSetPoint()
         {
-            using var device = await BluetoothLEDevice.FromIdAsync(deviceId);
-            if (device == null)
-                throw new ArgumentNullException("Failed to get information from device");
-            var serviceResults = await device.GetGattServicesAsync();
-            //filter and find first service with the specified UUID
-            GattDeviceService service = serviceResults.Services.FirstOrDefault(s => s.Uuid.ToString().Substring(4, 4) == uuid);
-
-            if (service == null)
-                return null;
-
-            return service;
-        }
-
-        //gets service gatt char by uui ... returns null if specified char is not found 
-        public async Task<GattCharacteristic> GetGattCharacteristicAsync(GattDeviceService service, string uuid)
-        {
-            GattCharacteristicsResult characteristicsResult = await service.GetCharacteristicsAsync();
-            if (characteristicsResult.Status == GattCommunicationStatus.Success)
+            droneAHRSSetPoint.roll = 15.5f;
+            droneAHRSSetPoint.yaw = 30.0f;
+            var characteristic = mGattCharacteristicsResult.Characteristics.FirstOrDefault(s => s.Uuid == AHRSSetPointCharacteristicGuid);
+            var rst = characteristic.CharacteristicProperties;
+            if (rst.HasFlag(GattCharacteristicProperties.WriteWithoutResponse))
             {
-                var characteristic = characteristicsResult.Characteristics.FirstOrDefault(c => c.Uuid.ToString().Substring(4, 4) == uuid);
-                if (Characteristic == null) 
-                    return null;
-
-                return characteristic;
+                var writer = new DataWriter();
+                writer.WriteBytes(getBytes(droneAHRSSetPoint));
+                GattCommunicationStatus result = await characteristic.WriteValueAsync(writer.DetachBuffer());
+                if (result == GattCommunicationStatus.Success)
+                {
+                    Debug.WriteLine("successfully wrote to device");
+                }
             }
-
-            return null;
+            Console.WriteLine("yep!!");
+            
         }
 
 
         //TODO: break down and fix need to subscribe in a higher module
-        public async Task SubscribeToCharacteristicsAsync(string deviceId, string serviceUuid, string characteristicUuid)
+        public async Task SubscribeToCharacteristicsAsync(string deviceId)
         {
             using var device = await BluetoothLEDevice.FromIdAsync(deviceId);
             if (device == null)
                 throw new ArgumentNullException("Failed to get information from device");
+            device.ConnectionStatusChanged += Device_ConnectionStatusChanged;
             var serviceResults = await device.GetGattServicesAsync();
             //filter and find first service with the specified UUID
-            GattDeviceService service = serviceResults.Services.FirstOrDefault(s => s.Uuid.ToString().Substring(4, 4) == serviceUuid);
+            GattDeviceService service = serviceResults.Services.FirstOrDefault(s => s.Uuid == AHRSServiceGuid);
 
             foreach (var serviceResult in serviceResults.Services)
             {
@@ -324,10 +326,13 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
             if (service == null)
                 return;
 
-/*            GattCharacteristicsResult characteristicsResult = await service.GetCharacteristicsAsync();
-            if (characteristicsResult.Status == GattCommunicationStatus.Success)
+            mGattCharacteristicsResult = await service.GetCharacteristicsAsync();
+
+            if (mGattCharacteristicsResult.Status == GattCommunicationStatus.Success)
             {
-                Characteristic = characteristicsResult.Characteristics.FirstOrDefault(c => c.Uuid.ToString().Substring(4, 4) == characteristicUuid);
+                mGattDeviceService = service;
+                mGattDeviceService.Session.MaintainConnection = true;
+                Characteristic = mGattCharacteristicsResult.Characteristics.FirstOrDefault(c => c.Uuid == AHRSCharacteristicGuid);
                 if (Characteristic == null) return;
                 GattCharacteristicProperties properties = Characteristic.CharacteristicProperties;
 
@@ -336,7 +341,7 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
                     Console.WriteLine("This characteristic has notify");
                     GattCommunicationStatus status = await Characteristic.WriteClientCharacteristicConfigurationDescriptorAsync(
                     GattClientCharacteristicConfigurationDescriptorValue.Notify);
-                    
+
                     if (status == GattCommunicationStatus.Success)
                     {
                         Characteristic.ValueChanged += Characteristic_ValueChanged;
@@ -344,10 +349,34 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
                     }
                 }
 
-            }*/
-
+            }
+            
         }
-        
+
+        private void Device_ConnectionStatusChanged(BluetoothLEDevice sender, object args)
+        {
+            Console.WriteLine($"Device status : {sender.ConnectionStatus}");
+        }
+
+        byte[] getBytes(DroneAHRS str)
+        {
+            int size = Marshal.SizeOf(str);
+            byte[] arr = new byte[size];
+
+            IntPtr ptr = IntPtr.Zero;
+            try
+            {
+                ptr = Marshal.AllocHGlobal(size);
+                Marshal.StructureToPtr(str, ptr, true);
+                Marshal.Copy(ptr, arr, 0, size);
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(ptr);
+            }
+            return arr;
+        }
+
         private void Characteristic_ValueChanged(GattCharacteristic sender, GattValueChangedEventArgs args)
         {
             lock(mThreadLock)

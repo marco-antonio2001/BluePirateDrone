@@ -26,7 +26,7 @@ namespace BluePirate.Desktop.WindowsApp
     public partial class MainWindow : Window
     {
 
-        public BluePirateBluetoothLEAdvertisementWatcher watcher;
+        static public BluePirateBluetoothLEAdvertisementWatcher watcher;
         ViewModel viewModel = new ViewModel();
         public MainWindow()
         {
@@ -91,7 +91,7 @@ namespace BluePirate.Desktop.WindowsApp
 
 
                     Debug.WriteLine($"Attempting to connect to device {devicekvp.DeviceId}");
-                    await watcher.SubscribeToCharacteristicsAsync(devicekvp.DeviceId, "ab30", "ab31");
+                    await watcher.SubscribeToCharacteristicsAsync(devicekvp.DeviceId);
                     Debug.WriteLine($"Device connected: {devicekvp.Connected}");
                 }
                 finally
@@ -143,6 +143,33 @@ namespace BluePirate.Desktop.WindowsApp
 
             tcs.Task.Wait();
 
+        }
+
+        private void btnWriteSetPointToDrone_Click(object sender, RoutedEventArgs e)
+        {
+            var tcs = new TaskCompletionSource<bool>();
+
+            Task.Run(async () =>
+            {
+                try
+                {
+                    //return all char for device
+                    await watcher.WriteToCharacteristicSetPoint();
+                }
+                catch (Exception e)
+                {
+                    Debug.WriteLine(e);
+                }
+                finally
+                {
+                    //anything goes wrong exit task
+                    tcs.SetResult(false);
+
+                }
+                tcs.TrySetResult(true);
+            });
+
+            tcs.Task.Wait();
         }
     }
 }
