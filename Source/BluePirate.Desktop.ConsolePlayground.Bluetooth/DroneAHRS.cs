@@ -9,8 +9,8 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
     [StructLayout(LayoutKind.Sequential)]
     public class DroneAHRS
     {
-        public float roll;     /* rotation around x axis in degrees */
-        public float pitch;    /* rotation around y axis in degrees */
+        public float roll { get; set; }     /* rotation around x axis in degrees */
+        public float pitch { get; set; }    /* rotation around y axis in degrees */
         public float yaw;      /* rotation around z axis in degrees */
         public float heading;  /* rotation relative to magnetic north */
         public float rollRadians, pitchRadians, yawRadians;

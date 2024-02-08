@@ -13,5 +13,7 @@
   <ItemGroup>
     <ProjectReference Include="..\BluePirate.Desktop.ConsolePlayground.Bluetooth\BluePirate.Desktop.ConsolePlayground.Bluetooth.csproj" />
   </ItemGroup>
+  
+  
 
 </Project>

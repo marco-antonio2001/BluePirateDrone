@@ -30,14 +30,16 @@ namespace BluePirate.Desktop.WindowsApp
         ViewModel viewModel = new ViewModel();
         public MainWindow()
         {
-            watcher = new BluePirateBluetoothLEAdvertisementWatcher(new GattServiceIDs());
-            watcher.NewDeviceDiscovered += (device) =>
+            watcher = new BluePirateBluetoothLEAdvertisementWatcher();
+            watcher.DeviceDiscovered += (device) =>
             {
                 viewModel.KeyValuePairs = new ObservableCollection<KeyValuePairModel>(watcher.DiscoredDevices.Select(kvp => new KeyValuePairModel { Key = kvp.Name, Value = kvp }));
             };
             watcher.StoppedListening += () => 
             {
-                viewModel.KeyValuePairs = new ObservableCollection<KeyValuePairModel>(watcher.DiscoredDevices.Select(kvp => new KeyValuePairModel { Key = kvp.Name, Value = kvp }));
+                viewModel.KeyValuePairs.Clear();
+                viewModel.GattCharacteristics.Clear();
+                viewModel.GattServices.Clear();
             };
             watcher.DeviceTimedout += (device) => { viewModel.KeyValuePairs = new ObservableCollection<KeyValuePairModel>(watcher.DiscoredDevices.Select(kvp => new KeyValuePairModel { Key = kvp.Name, Value = kvp })); };
             watcher.SubscribedValueChanged += (ahrs) => { viewModel.DronePitch = watcher.droneAHRS.pitch; viewModel.DroneRoll = watcher.droneAHRS.roll; };
@@ -154,7 +156,7 @@ namespace BluePirate.Desktop.WindowsApp
                 try
                 {
                     //return all char for device
-                    await watcher.WriteToCharacteristicSetPoint();
+                    await watcher.WriteToCharacteristicSetPoint(viewModel.DroneAHRSSetPoint);
                 }
                 catch (Exception e)
                 {

@@ -25,8 +25,6 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
         public event Action<BluePirateBluetoothLEDevice> DeviceDiscovered = (device) => { };
         //fired when new divice is discovred
         public event Action<BluePirateBluetoothLEDevice> NewDeviceDiscovered = (device) => { };
-        //fired when a known device's name changes
-        public event Action<BluePirateBluetoothLEDevice> DeviceNameChanged = (device) => { };
         //fired when a device is removed for timing out
         public event Action<BluePirateBluetoothLEDevice> DeviceTimedout = (device) => { };
 
@@ -42,10 +40,8 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
         //list of our discovred devices ** need to make thread safe 
         private readonly Dictionary<string, BluePirateBluetoothLEDevice> mDiscoveredDevices = new Dictionary<string, BluePirateBluetoothLEDevice>();
         private readonly object mThreadLock = new object();
-        private readonly GattServiceIDs mGattServices;
 
         public DroneAHRS droneAHRS = new DroneAHRS();
-        public DroneAHRS droneAHRSSetPoint = new DroneAHRS();
         public bool Listening => mWatcher.Status == BluetoothLEAdvertisementWatcherStatus.Started;
         public int HeartBeatTimeout { get; set; } = 30;
 
@@ -84,10 +80,8 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
             }
         }
 
-        public BluePirateBluetoothLEAdvertisementWatcher(GattServiceIDs gattIds)
+        public BluePirateBluetoothLEAdvertisementWatcher()
         {
-            mGattServices = gattIds ?? throw new ArgumentNullException(nameof(gattIds)); 
-
             mWatcher = new BluetoothLEAdvertisementWatcher
             {
                 ScanningMode = BluetoothLEScanningMode.Active
@@ -107,36 +101,28 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
             //clean up timeout 
             CleanUpTimeouts();
 
-
             //gets the ble device info
             var device = await GetBluetoothLEDeviceAsync(args.BluetoothAddress,args.Timestamp,args.RawSignalStrengthInDBm);
 
-            if (device == null) 
+            if (device == null)
+                return;
+
+            //only want to find the drone test
+            if (!device.Name.Equals("DroneTest")) 
             {
                 //Console.WriteLine("Device Null could not get more information connect");
                 return;
             }
                 
-
-
-
+            //TODO remove or reduce some logic here
             var newDiscovery = false;
-            string existingName = default(string);
-            bool nameChanged;
 
             //lock for thread safety 
             lock (mThreadLock)
             {
                 newDiscovery = !mDiscoveredDevices.ContainsKey(device.DeviceId);
 
-                if (!newDiscovery)
-                {
-                    existingName = mDiscoveredDevices[device.DeviceId].Name;
-                }
-
-
                 //if already in dic but name is changed/discovered
-                nameChanged = !newDiscovery && !string.IsNullOrEmpty(device.Name) && existingName != device.Name;
                 if (!Listening)
                     return;
 
@@ -145,11 +131,6 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
             }
 
             DeviceDiscovered(device);
-
-            if(nameChanged)
-            {
-                DeviceNameChanged(device);
-            }
 
             if ( newDiscovery )
             {
@@ -173,24 +154,7 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
                 var test = await device.GetGattServicesAsync();
                 Console.WriteLine("Found services");
             }
-            //get gatt services that are available 
-            GattDeviceServicesResult gatt;
-            try
-            {
-                gatt = await device.GetGattServicesAsync();
-            }
-            catch (Exception)
-            {
-                //Console.WriteLine("Exception Found");
-                throw;
-            }
 
-/*            IReadOnlyList<GattDeviceService> gattService = null;
-            //if we have any services
-            if (gatt.Status == GattCommunicationStatus.Success)
-            {
-                gattService = gatt.Services;
-            }*/
             return new BluePirateBluetoothLEDevice
                 (
                     deviceId: device.DeviceId,
@@ -287,23 +251,26 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
         }
 
         //write to characteristic 
-        public async Task WriteToCharacteristicSetPoint()
+        public async Task WriteToCharacteristicSetPoint(DroneAHRS droneAHRSSetPoint)
         {
-            droneAHRSSetPoint.roll = 15.5f;
-            droneAHRSSetPoint.yaw = 30.0f;
+            if(droneAHRSSetPoint == null)  
+                throw new ArgumentNullException();
+            if (mGattCharacteristicsResult == null)
+                return;
+
             var characteristic = mGattCharacteristicsResult.Characteristics.FirstOrDefault(s => s.Uuid == AHRSSetPointCharacteristicGuid);
             var rst = characteristic.CharacteristicProperties;
+
             if (rst.HasFlag(GattCharacteristicProperties.WriteWithoutResponse))
             {
                 var writer = new DataWriter();
                 writer.WriteBytes(getBytes(droneAHRSSetPoint));
                 GattCommunicationStatus result = await characteristic.WriteValueAsync(writer.DetachBuffer());
-                if (result == GattCommunicationStatus.Success)
+                if (result != GattCommunicationStatus.Success)
                 {
-                    Debug.WriteLine("successfully wrote to device");
+                    Debug.WriteLine($"did not write to device sucssefully {result}");
                 }
             }
-            Console.WriteLine("yep!!");
             
         }
 
@@ -386,10 +353,18 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
                 byte[] bff = new byte[32];
                 reader.ReadBytes(bff);
 
-                IntPtr ptPoit = Marshal.AllocHGlobal(32);
-                Marshal.Copy(bff, 0, ptPoit, 32);
-                droneAHRS = (DroneAHRS)Marshal.PtrToStructure(ptPoit, typeof(DroneAHRS));
-                Marshal.FreeHGlobal(ptPoit);
+                IntPtr ptPoit = IntPtr.Zero;
+                try
+                {
+                    ptPoit = Marshal.AllocHGlobal(32);
+                    Marshal.Copy(bff, 0, ptPoit, 32);
+                    droneAHRS = (DroneAHRS)Marshal.PtrToStructure(ptPoit, typeof(DroneAHRS));
+                }
+                finally
+                { 
+                    Marshal.FreeHGlobal(ptPoit); 
+                }
+
                 if (droneAHRS == null)
                     return;
                 SubscribedValueChanged(droneAHRS);

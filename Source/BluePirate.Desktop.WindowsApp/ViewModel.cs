@@ -21,8 +21,15 @@ namespace BluePirate.Desktop.WindowsApp
         private GattCharacteristicKVP _selectedGattCharacteristicsKVP;
 
         private DroneAHRS _droneAHRS;
+        private DroneAHRS _droneAHRSSetPoint;
         private float _roll;
         private float _pitch;
+
+        public ViewModel()
+        {
+            DroneAHRSSetPoint = new DroneAHRS();
+
+        }
 
         public ObservableCollection<KeyValuePairModel> KeyValuePairs
         {
@@ -36,6 +43,10 @@ namespace BluePirate.Desktop.WindowsApp
                 }
             }
         }
+
+#if true
+
+#endif
 
         public ObservableCollection<GattServiceKVP> GattServices 
         {
@@ -65,18 +76,6 @@ namespace BluePirate.Desktop.WindowsApp
         }
 
 
-        public KeyValuePairModel SelectedKeyValuePair
-        {
-            get { return _selectedKeyValuePair; }
-            set
-            {
-                if (_selectedKeyValuePair != value)
-                {
-                    _selectedKeyValuePair = value;
-                    OnPropertyChanged(nameof(SelectedKeyValuePair));
-                }
-            }
-        }
 
         public GattCharacteristicKVP SelectedGattCharacteristicsKVP
         {
@@ -103,6 +102,21 @@ namespace BluePirate.Desktop.WindowsApp
                 }
             }
         }
+
+        public KeyValuePairModel SelectedKeyValuePair
+        {
+            get { return _selectedKeyValuePair; }
+            set
+            {
+                if (_selectedKeyValuePair != value)
+                {
+                    _selectedKeyValuePair = value;
+                    OnPropertyChanged(nameof(SelectedKeyValuePair));
+                }
+            }
+        }
+
+        public DroneAHRS DroneAHRSSetPoint { get; set; }
 
         public DroneAHRS DroneAHRSValue
         {

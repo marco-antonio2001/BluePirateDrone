@@ -73,29 +73,15 @@
         <Button x:Name="btnConnectToSelectedBLEDevice" Content="Connect" HorizontalAlignment="Left" Margin="12,118,0,0" VerticalAlignment="Top" Width="83" Click="btnConnectToSelectedBLEDevice_Click"/>
         <TextBox x:Name="txtBoxRoll" HorizontalAlignment="Left" Margin="282,68,0,0" TextWrapping="Wrap" Text="{Binding Path=DroneRoll, UpdateSourceTrigger=PropertyChanged, StringFormat={}{0:F2}}" VerticalAlignment="Top" Width="120"/>
         <TextBox x:Name="txtBoxPitch" HorizontalAlignment="Left" Margin="426,68,0,0" TextWrapping="Wrap" Text="{Binding DronePitch, UpdateSourceTrigger=PropertyChanged,StringFormat={}{0:F2}}" VerticalAlignment="Top" Width="120"/>
-        <ListView x:Name="listViewServiceCharacteristics" ItemsSource="{Binding GattCharacteristics}" SelectedItem="{Binding SelectedGattCharacteristicsKVP}" Grid.Row="0" Grid.Column="0"
-            HorizontalAlignment="Left" VerticalAlignment="Bottom"
-            Width="240" Height="104" Margin="550,0,0,35"  SelectionMode="Single">
-            <ListView.View>
-                <GridView>
-                    <GridViewColumn Header="uuid"
-                        DisplayMemberBinding="{Binding Key}" />
-                    <GridViewColumn Header="Desc"
-                        DisplayMemberBinding="{Binding Value.UserDescription}" />
-                </GridView>
-            </ListView.View>
-        </ListView>
-        <ListView x:Name="listViewDeviceGattServices" ItemsSource="{Binding GattServices}" SelectedItem="{Binding SelectedGattServiceKVP}" Grid.Column="0"
-            HorizontalAlignment="Left" VerticalAlignment="Center"
-            Width="240" Height="104" Margin="550,0,0,0" SelectionChanged="listViewDeviceGattServices_SelectionChanged"   SelectionMode="Single">
-            <ListView.View>
-                <GridView>
-                    <GridViewColumn Header="Uuid"
-                        DisplayMemberBinding="{Binding Key}" />
-                </GridView>
-            </ListView.View>
-        </ListView>
+
         <Button x:Name="btnWriteSetPointToDrone" Content="write" HorizontalAlignment="Left" Margin="172,113,0,0" VerticalAlignment="Top" Width="83" Click="btnWriteSetPointToDrone_Click"/>
+        <Rectangle HorizontalAlignment="Left" Height="223" Margin="559,176,0,0" Stroke="Black" VerticalAlignment="Top" Width="231"/>
+        <TextBox x:Name="txtboxRollSetPoint" HorizontalAlignment="Left" Margin="578,212,0,0" TextWrapping="Wrap" Text="{Binding DroneAHRSSetPoint.roll, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Top" Width="96"/>
+        <TextBox x:Name="txtboxPitchSetPoint" HorizontalAlignment="Left" Margin="679,212,0,0" TextWrapping="Wrap" Text="{Binding DroneAHRSSetPoint.pitch,Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Top" Width="97"/>
+        <Label x:Name="lblCurrentRoll" Content="Roll" HorizontalAlignment="Left" Margin="312,37,0,0" VerticalAlignment="Top" Width="60"/>
+        <Label x:Name="lblCurrentPitch" Content="Pitch" HorizontalAlignment="Left" Margin="456,37,0,0" VerticalAlignment="Top" Width="60"/>
+        <Label x:Name="lblWriteSetpointRoll" Content="Roll" HorizontalAlignment="Left" Margin="578,181,0,0" VerticalAlignment="Top" Width="60"/>
+        <Label x:Name="lblWriteSetpointPitch" Content="Pitch" HorizontalAlignment="Left" Margin="679,181,0,0" VerticalAlignment="Top" Width="60"/>
 
     </Grid>
 </Window>
