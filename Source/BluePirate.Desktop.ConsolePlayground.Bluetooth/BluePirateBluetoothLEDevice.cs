@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Windows.Devices.Bluetooth.GenericAttributeProfile;
 
@@ -17,9 +18,7 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
         public bool Paired { get; }
         public string DeviceId { get; }
 
-        public IReadOnlyList<GattDeviceService> Services;
-
-        public BluePirateBluetoothLEDevice(DateTimeOffset broadCastTime, ulong address, string name, short signalStrenghtDB, bool connected, bool canPair, bool paired, string deviceId, IReadOnlyList<GattDeviceService> gattServices)
+        public BluePirateBluetoothLEDevice(DateTimeOffset broadCastTime, ulong address, string name, short signalStrenghtDB, bool connected, bool canPair, bool paired, string deviceId)
         {
             BroadCastTime = broadCastTime;
             Address = address;
@@ -29,7 +28,7 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
             CanPair = canPair;
             Paired = paired;
             DeviceId = deviceId;
-            Services = gattServices;
+           
         }
 
         public override string ToString()
