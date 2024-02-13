@@ -37,9 +37,12 @@ namespace BluePirate.Desktop.WindowsApp
             };
             watcher.StoppedListening += () => 
             {
-                viewModel.KeyValuePairs.Clear();
-                viewModel.GattCharacteristics.Clear();
-                viewModel.GattServices.Clear();
+                if(viewModel.KeyValuePairs.Count() > 0)
+                    viewModel.KeyValuePairs.Clear();
+                if(viewModel.GattCharacteristics.Count() > 0)
+                    viewModel.GattCharacteristics.Clear();
+                if (viewModel.GattServices.Count() > 0)
+                    viewModel.GattServices.Clear();
             };
             watcher.DeviceTimedout += (device) => { viewModel.KeyValuePairs = new ObservableCollection<KeyValuePairModel>(watcher.DiscoredDevices.Select(kvp => new KeyValuePairModel { Key = kvp.Name, Value = kvp })); };
             watcher.SubscribedValueChanged += (ahrs) => { viewModel.DronePitch = watcher.droneAHRS.pitch; viewModel.DroneRoll = watcher.droneAHRS.roll; };
