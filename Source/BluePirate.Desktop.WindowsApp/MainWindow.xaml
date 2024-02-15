@@ -82,14 +82,21 @@
         <TextBox x:Name="txtBoxRoll" HorizontalAlignment="Left" Margin="298,376,0,0" TextWrapping="Wrap" Text="{Binding DroneRoll, StringFormat=\{0:F2\}, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Top" Width="82"/>
         <TextBox x:Name="txtBoxPitch" HorizontalAlignment="Left" Margin="404,376,0,0" TextWrapping="Wrap" Text="{Binding DronePitch, StringFormat=\{0:F2\}, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Top" Width="82"/>
 
-        <Button x:Name="btnWriteSetPointToDrone" Content="write" HorizontalAlignment="Left" Margin="536,135,0,0" VerticalAlignment="Top" Width="198" Click="btnWriteSetPointToDrone_Click"/>
-        <TextBox x:Name="txtboxRollSetPoint" HorizontalAlignment="Left" Margin="536,102,0,0" TextWrapping="Wrap" Text="{Binding DroneAHRSSetPoint.roll, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Top" Width="96"/>
-        <TextBox x:Name="txtboxPitchSetPoint" HorizontalAlignment="Left" Margin="636,102,0,0" TextWrapping="Wrap" Text="{Binding DroneAHRSSetPoint.pitch, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Top" Width="98"/>
+        <Button x:Name="btnWriteSetPointToDrone" Content="Write Attitude sp" HorizontalAlignment="Left" Margin="536,130,0,0" VerticalAlignment="Top" Width="198" Click="btnWriteSetPointToDrone_Click"/>
+        <TextBox x:Name="txtboxRollSetPoint" HorizontalAlignment="Left" Margin="536,102,0,0" TextWrapping="Wrap" Text="{Binding DroneAHRSSetPoint.roll, StringFormat=\{0:F2\}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Top" Width="96"/>
+        <TextBox x:Name="txtboxPitchSetPoint" HorizontalAlignment="Left" Margin="636,102,0,0" TextWrapping="Wrap" Text="{Binding DroneAHRSSetPoint.pitch, StringFormat=\{0:F2\}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Top" Width="98"/>
 
         <materialDesign:Chip Content="Setpnt Roll" Margin="536,65,0,0" VerticalAlignment="Top" Width="96" IsEnabled="False"/>
-        <materialDesign:Chip Content="Setpnt Pitch" Margin="638,65,0,0" VerticalAlignment="Top" Width="96"/>
-        <materialDesign:Chip Content="Act Roll" Margin="298,339,0,0" VerticalAlignment="Top" Width="82"/>
-        <materialDesign:Chip Content="Act Pitch" Margin="404,339,0,0" VerticalAlignment="Top" Width="82"/>
+        <materialDesign:Chip Content="Setpnt Pitch" Margin="638,65,0,0" VerticalAlignment="Top" Width="96" IsEnabled="False"/>
+        <materialDesign:Chip Content="Act Roll" Margin="298,339,0,0" VerticalAlignment="Top" Width="82" IsEnabled="False"/>
+        <materialDesign:Chip Content="Act Pitch" Margin="404,339,0,0" VerticalAlignment="Top" Width="82" IsEnabled="False"/>
+        <TextBox x:Name="txtboxRollKp" HorizontalAlignment="Left" Margin="538,270,0,0" TextWrapping="Wrap" Text="{Binding DronePIDConfigValue.MKp, StringFormat=\{0:F2\}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Top" Width="96"/>
+        <TextBox x:Name="txtboxRollKi" HorizontalAlignment="Left" Margin="638,270,0,0" TextWrapping="Wrap" Text="{Binding DronePIDConfigValue.MKi, StringFormat=\{0:F2\}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Top" Width="98"/>
+        <materialDesign:Chip Content="Roll Kp" Margin="538,233,0,0" VerticalAlignment="Top" Width="96" IsEnabled="False"/>
+        <materialDesign:Chip Content="Roll Ki" Margin="640,233,0,0" VerticalAlignment="Top" Width="96" IsEnabled="False"/>
+        <TextBox x:Name="txtboxRollKd" HorizontalAlignment="Left" Margin="536,339,0,0" TextWrapping="Wrap" Text="{Binding DronePIDConfigValue.MKd, StringFormat=\{0:F2\}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Top" Width="98"/>
+        <materialDesign:Chip Content="Roll Kd" Margin="538,302,0,0" VerticalAlignment="Top" Width="96" IsEnabled="False"/>
+        <Button x:Name="btnWritePidValues" Content="Write PID Values" HorizontalAlignment="Left" Margin="536,367,0,0" VerticalAlignment="Top" Width="198" Click="btnWritePidValues_Click" />
 
     </Grid>
 </Window>

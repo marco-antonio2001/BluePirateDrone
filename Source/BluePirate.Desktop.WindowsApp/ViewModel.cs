@@ -5,14 +5,13 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Text;
+using Windows.ApplicationModel.VoiceCommands;
 using Windows.Devices.Bluetooth.GenericAttributeProfile;
 
 namespace BluePirate.Desktop.WindowsApp
 {
     public class ViewModel : INotifyPropertyChanged
     {
-       
-
         private ObservableCollection<KeyValuePairModel> _keyValuePairs;
         private KeyValuePairModel _selectedKeyValuePair;
         private ObservableCollection<GattServiceKVP> _gattServicesKVP;
@@ -21,14 +20,13 @@ namespace BluePirate.Desktop.WindowsApp
         private GattCharacteristicKVP _selectedGattCharacteristicsKVP;
 
         private DroneAHRS _droneAHRS;
-        private DroneAHRS _droneAHRSSetPoint;
         private float _roll;
         private float _pitch;
 
         public ViewModel()
         {
-            DroneAHRSSetPoint = new DroneAHRS();
-
+            DroneAHRSSetPoint = new AttitudeSetPoint();
+            DronePIDConfigValue = new DronePIDConfig();
         }
 
         public ObservableCollection<KeyValuePairModel> KeyValuePairs
@@ -43,10 +41,6 @@ namespace BluePirate.Desktop.WindowsApp
                 }
             }
         }
-
-#if true
-
-#endif
 
         public ObservableCollection<GattServiceKVP> GattServices 
         {
@@ -116,7 +110,7 @@ namespace BluePirate.Desktop.WindowsApp
             }
         }
 
-        public DroneAHRS DroneAHRSSetPoint { get; set; }
+        public AttitudeSetPoint DroneAHRSSetPoint { get; set; }
 
         public DroneAHRS DroneAHRSValue
         {
@@ -130,6 +124,8 @@ namespace BluePirate.Desktop.WindowsApp
                 }
             }
         }
+
+        public DronePIDConfig DronePIDConfigValue { get; set; }
 
 
         public float DroneRoll
@@ -156,6 +152,14 @@ namespace BluePirate.Desktop.WindowsApp
                     OnPropertyChanged(nameof(DronePitch));
                 }
             }
+        }
+
+        public void ClearLocalVariables()
+        {
+            _keyValuePairs.Clear();
+            _gattCharacteristicsKVP.Clear();
+            _gattServicesKVP.Clear();
+
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
