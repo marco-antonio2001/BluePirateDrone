@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34330.188
@@ -13,7 +13,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BluePirate.Desktop.ConsoleP
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BluePirate.Desktop.Playground", "Source\BluePirate.Desktop.Playground\BluePirate.Desktop.Playground.csproj", "{CD2F7C3F-460C-4DBB-801D-531B00981115}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BluePirate.Desktop.WindowsApp", "Source\BluePirate.Desktop.WindowsApp\BluePirate.Desktop.WindowsApp.csproj", "{8D0BB69E-1BB7-41D5-A55F-E0E247B203BF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BluePirate.Desktop.WindowsApp", "Source\BluePirate.Desktop.WindowsApp\BluePirate.Desktop.WindowsApp.csproj", "{8D0BB69E-1BB7-41D5-A55F-E0E247B203BF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

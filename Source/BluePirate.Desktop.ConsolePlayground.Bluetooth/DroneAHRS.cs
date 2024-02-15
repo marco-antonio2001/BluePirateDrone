@@ -11,8 +11,8 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
     {
         public float roll { get; set; }     /* rotation around x axis in degrees */
         public float pitch { get; set; }    /* rotation around y axis in degrees */
-        public float yaw;      /* rotation around z axis in degrees */
-        public float heading;  /* rotation relative to magnetic north */
+        public float yaw { get; set; }       /* rotation around z axis in degrees */
+        public float heading { get; set; }   /* rotation relative to magnetic north */
         public float rollRadians, pitchRadians, yawRadians;
         public uint timeStamp;
 

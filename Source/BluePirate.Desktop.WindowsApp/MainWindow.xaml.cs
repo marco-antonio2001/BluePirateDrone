@@ -37,9 +37,7 @@ namespace BluePirate.Desktop.WindowsApp
             };
             watcher.StoppedListening += () => 
             {
-                viewModel.KeyValuePairs.Clear();
-                viewModel.GattCharacteristics.Clear();
-                viewModel.GattServices.Clear();
+                //viewModel.ClearLocalVariables();
             };
             watcher.DeviceTimedout += (device) => { viewModel.KeyValuePairs = new ObservableCollection<KeyValuePairModel>(watcher.DiscoredDevices.Select(kvp => new KeyValuePairModel { Key = kvp.Name, Value = kvp })); };
             watcher.SubscribedValueChanged += (ahrs) => { viewModel.DronePitch = watcher.droneAHRS.pitch; viewModel.DroneRoll = watcher.droneAHRS.roll; };
@@ -147,6 +145,8 @@ namespace BluePirate.Desktop.WindowsApp
 
         }
 
+
+
         private void btnWriteSetPointToDrone_Click(object sender, RoutedEventArgs e)
         {
             var tcs = new TaskCompletionSource<bool>();
@@ -172,6 +172,33 @@ namespace BluePirate.Desktop.WindowsApp
             });
 
             tcs.Task.Wait();
+        }
+
+        private void btnWritePidValues_Click(object sender, RoutedEventArgs e)
+        {
+            var tcs = new TaskCompletionSource<bool>();
+
+                Task.Run(async () =>
+                {
+                    try
+                    {
+                        //return all char for device
+                        await watcher.WriteToCharacteristicPIDConfig(viewModel.DronePIDConfigValue);
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.WriteLine(e);
+                    }
+                    finally
+                    {
+                        //anything goes wrong exit task
+                        tcs.SetResult(false);
+
+                    }
+                    tcs.TrySetResult(true);
+                });
+
+                tcs.Task.Wait();
         }
     }
 }

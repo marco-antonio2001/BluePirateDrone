@@ -35,6 +35,7 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
         private static readonly Guid AHRSServiceGuid = new Guid("F000AB30-0451-4000-B000-000000000000");
         private static readonly Guid AHRSCharacteristicGuid = new Guid("F000AB31-0451-4000-B000-000000000000");
         private static readonly Guid AHRSSetPointCharacteristicGuid = new Guid("F000AB32-0451-4000-B000-000000000000");
+        private static readonly Guid DronePIDConfigCharacteristicGuid = new Guid("F000AB33-0451-4000-B000-000000000000");
 
         private readonly BluetoothLEAdvertisementWatcher mWatcher;
         //list of our discovred devices ** need to make thread safe 
@@ -250,8 +251,33 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
             return characteristicsResult;
         }
 
+        public async Task WriteToCharacteristicPIDConfig(DronePIDConfig dronePIDConfig)
+        {
+            if (dronePIDConfig == null)
+                throw new ArgumentNullException();
+            if (mGattCharacteristicsResult == null)
+                return;
+
+            var characteristic = mGattCharacteristicsResult.Characteristics.FirstOrDefault(s => s.Uuid == DronePIDConfigCharacteristicGuid);
+            if (characteristic == null)
+                return;
+            var rst = characteristic.CharacteristicProperties;
+
+            if (rst.HasFlag(GattCharacteristicProperties.WriteWithoutResponse))
+            {
+                var writer = new DataWriter();
+                writer.WriteBytes(getDronePIDConfigBytes(dronePIDConfig));
+                GattCommunicationStatus result = await characteristic.WriteValueAsync(writer.DetachBuffer());
+                if (result != GattCommunicationStatus.Success)
+                {
+                    Debug.WriteLine($"did not write to device sucssefully {result}");
+                }
+            }
+
+        }
+
         //write to characteristic 
-        public async Task WriteToCharacteristicSetPoint(DroneAHRS droneAHRSSetPoint)
+        public async Task WriteToCharacteristicSetPoint(AttitudeSetPoint droneAHRSSetPoint)
         {
             if(droneAHRSSetPoint == null)  
                 throw new ArgumentNullException();
@@ -264,7 +290,7 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
             if (rst.HasFlag(GattCharacteristicProperties.WriteWithoutResponse))
             {
                 var writer = new DataWriter();
-                writer.WriteBytes(getBytes(droneAHRSSetPoint));
+                writer.WriteBytes(getAttitudeSetPointBytes(droneAHRSSetPoint));
                 GattCommunicationStatus result = await characteristic.WriteValueAsync(writer.DetachBuffer());
                 if (result != GattCommunicationStatus.Success)
                 {
@@ -325,7 +351,7 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
             Console.WriteLine($"Device status : {sender.ConnectionStatus}");
         }
 
-        byte[] getBytes(DroneAHRS str)
+        byte[] getDroneAHRSBytes(DroneAHRS str)
         {
             int size = Marshal.SizeOf(str);
             byte[] arr = new byte[size];
@@ -343,6 +369,45 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
             }
             return arr;
         }
+
+        byte[] getAttitudeSetPointBytes(AttitudeSetPoint str)
+        {
+            int size = Marshal.SizeOf(str);
+            byte[] arr = new byte[size];
+
+            IntPtr ptr = IntPtr.Zero;
+            try
+            {
+                ptr = Marshal.AllocHGlobal(size);
+                Marshal.StructureToPtr(str, ptr, true);
+                Marshal.Copy(ptr, arr, 0, size);
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(ptr);
+            }
+            return arr;
+        }
+
+        byte[] getDronePIDConfigBytes(DronePIDConfig str)
+        {
+            int size = Marshal.SizeOf(str);
+            byte[] arr = new byte[size];
+
+            IntPtr ptr = IntPtr.Zero;
+            try
+            {
+                ptr = Marshal.AllocHGlobal(size);
+                Marshal.StructureToPtr(str, ptr, true);
+                Marshal.Copy(ptr, arr, 0, size);
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(ptr);
+            }
+            return arr;
+        }
+
 
         private void Characteristic_ValueChanged(GattCharacteristic sender, GattValueChangedEventArgs args)
         {
