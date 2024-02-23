@@ -18,7 +18,7 @@ namespace BluePirate.Desktop.Playground
                 try
                 {
                     Console.WriteLine("Hello World!");
-                    var watcher = new BluePirateBluetoothLEAdvertisementWatcher(new GattServiceIDs());
+                    var watcher = new BluePirateBluetoothLEAdvertisementWatcher();
 
                     //this sets us into the events
                     watcher.StartedListening += () =>
@@ -37,12 +37,6 @@ namespace BluePirate.Desktop.Playground
                     {
                         Console.ForegroundColor = ConsoleColor.Green;
                         Console.WriteLine($"new device discovered {device}");
-                    };
-
-                    watcher.DeviceNameChanged += (device) =>
-                    {
-                        Console.ForegroundColor = ConsoleColor.Yellow;
-                        Console.WriteLine($"Device Name Changed {device}");
                     };
 
                     watcher.DeviceTimedout += (device) =>
@@ -90,7 +84,7 @@ namespace BluePirate.Desktop.Playground
                             try
                             {
                                 //await watcher.PairToDeviceAsync(droneDevice.DeviceId);
-                                await watcher.SubscribeToCharacteristicsAsync(droneDevice.DeviceId,"ab30","ab31");
+                                await watcher.SubscribeToCharacteristicsAsync(droneDevice.DeviceId);
                             }
                             catch (Exception e)
                             {

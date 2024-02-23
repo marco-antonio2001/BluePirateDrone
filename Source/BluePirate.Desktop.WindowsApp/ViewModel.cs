@@ -5,24 +5,27 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Text;
+using Windows.ApplicationModel.VoiceCommands;
 using Windows.Devices.Bluetooth.GenericAttributeProfile;
 
 namespace BluePirate.Desktop.WindowsApp
 {
     public class ViewModel : INotifyPropertyChanged
     {
-       
-
         private ObservableCollection<KeyValuePairModel> _keyValuePairs;
         private KeyValuePairModel _selectedKeyValuePair;
         private ObservableCollection<GattServiceKVP> _gattServicesKVP;
         private GattServiceKVP _selectedGattServicesKVP;
         private ObservableCollection<GattCharacteristicKVP> _gattCharacteristicsKVP;
         private GattCharacteristicKVP _selectedGattCharacteristicsKVP;
-
         private DroneAHRS _droneAHRS;
-        private float _roll;
-        private float _pitch;
+
+        public ViewModel()
+        {
+            DroneAHRSSetPoint = new AttitudeSetPoint();
+            DronePIDConfigValue = new DronePIDConfig();
+            DroneAHRSValue = new DroneAHRS();
+        }
 
         public ObservableCollection<KeyValuePairModel> KeyValuePairs
         {
@@ -65,18 +68,6 @@ namespace BluePirate.Desktop.WindowsApp
         }
 
 
-        public KeyValuePairModel SelectedKeyValuePair
-        {
-            get { return _selectedKeyValuePair; }
-            set
-            {
-                if (_selectedKeyValuePair != value)
-                {
-                    _selectedKeyValuePair = value;
-                    OnPropertyChanged(nameof(SelectedKeyValuePair));
-                }
-            }
-        }
 
         public GattCharacteristicKVP SelectedGattCharacteristicsKVP
         {
@@ -104,6 +95,21 @@ namespace BluePirate.Desktop.WindowsApp
             }
         }
 
+        public KeyValuePairModel SelectedKeyValuePair
+        {
+            get { return _selectedKeyValuePair; }
+            set
+            {
+                if (_selectedKeyValuePair != value)
+                {
+                    _selectedKeyValuePair = value;
+                    OnPropertyChanged(nameof(SelectedKeyValuePair));
+                }
+            }
+        }
+
+        public AttitudeSetPoint DroneAHRSSetPoint { get; set; }
+
         public DroneAHRS DroneAHRSValue
         {
             get { return _droneAHRS; }
@@ -117,31 +123,15 @@ namespace BluePirate.Desktop.WindowsApp
             }
         }
 
+        public DronePIDConfig DronePIDConfigValue { get; set; }
 
-        public float DroneRoll
-        {
-            get { return _roll; }
-            set
-            {
-                if (_roll != value)
-                {
-                    _roll = value;
-                    OnPropertyChanged(nameof(DroneRoll));
-                }
-            }
-        }
 
-        public float DronePitch
+        public void ClearLocalVariables()
         {
-            get { return _pitch; }
-            set
-            {
-                if (_pitch != value)
-                {
-                    _pitch = value;
-                    OnPropertyChanged(nameof(DronePitch));
-                }
-            }
+            _keyValuePairs.Clear();
+            _gattCharacteristicsKVP.Clear();
+            _gattServicesKVP.Clear();
+
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
