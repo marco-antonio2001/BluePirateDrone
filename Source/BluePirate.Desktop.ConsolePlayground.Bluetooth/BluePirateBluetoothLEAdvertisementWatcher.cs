@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Windows.Devices.Bluetooth;
 using Windows.Devices.Bluetooth.Advertisement;
 using Windows.Devices.Bluetooth.GenericAttributeProfile;
+using Windows.Devices.Enumeration;
 using Windows.Storage.Streams;
 
 namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
@@ -194,22 +195,6 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
             }
             
         }
-        public async Task PairToDeviceAsync(string deviceId)
-        {
-            using var device = await BluetoothLEDevice.FromIdAsync(deviceId);
-
-            if (device == null)
-                throw new ArgumentNullException("Failed to get information from device") ;
-
-            device.DeviceInformation.Pairing.Custom.PairingRequested += (sender, args) =>
-            {
-                var paringKind = args.PairingKind;
-                args.Accept();
-                Console.WriteLine($"<T> {args}");
-            };
-
-            var result = await device.DeviceInformation.Pairing.PairAsync();
-        }
 
         //get  all service in a device
         public async Task<GattDeviceServicesResult> GetResultOfDeviceServicesAsync(string deviceId)
@@ -219,36 +204,6 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
                 throw new ArgumentNullException("Failed to get information from device");
             var serviceResults = await device.GetGattServicesAsync();
             return serviceResults;
-        }
-
-        //get all char in a service
-        public async Task<GattCharacteristicsResult> GetResultOfServiceCharacteristicsAsync(GattDeviceService service)
-        {
-            
-            using var device = await BluetoothLEDevice.FromIdAsync(service.Session.DeviceId.Id);
-            var gattServices = await device.GetGattServicesAsync(BluetoothCacheMode.Uncached);
-            
-            //TODO: handle when service uuid returns more than one serives
-            var gattService = gattServices.Services.FirstOrDefault(s => s.Uuid == mGattDeviceService.Uuid);
-            
-
-            var accessStatus = await gattService.RequestAccessAsync();
-            var sesStat = gattService.Session.SessionStatus;
-            Debug.WriteLine($"Requesting access to service : {accessStatus} , Session status {sesStat}");
-            GattCharacteristicsResult characteristicsResult = await gattService.GetCharacteristicsAsync(BluetoothCacheMode.Uncached);
-            
-            if (characteristicsResult.Status == GattCommunicationStatus.AccessDenied)
-            {
-                accessStatus = await gattService.RequestAccessAsync();
-                Debug.WriteLine($"Requesting access to service : {accessStatus} Trying again....");
-                characteristicsResult = await gattService.GetCharacteristicsAsync();
-                return mGattCharacteristicsResult;
-            }
-
-            if (characteristicsResult == null)
-                return null;
-
-            return characteristicsResult;
         }
 
         public async Task WriteToCharacteristicPIDConfig(DronePIDConfig dronePIDConfig)
@@ -312,14 +267,11 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
             //filter and find first service with the specified UUID
             GattDeviceService service = serviceResults.Services.FirstOrDefault(s => s.Uuid == AHRSServiceGuid);
 
-            foreach (var serviceResult in serviceResults.Services)
-            {
-                Debug.WriteLine(serviceResult.Uuid);
-            }
             if (service == null)
                 return;
-
+            Debug.WriteLine($"Service found getting Chars{service.Uuid}");
             mGattCharacteristicsResult = await service.GetCharacteristicsAsync();
+            Debug.WriteLine($"Char async stat results: {mGattCharacteristicsResult.Status}");
 
             if (mGattCharacteristicsResult.Status == GattCommunicationStatus.Success)
             {

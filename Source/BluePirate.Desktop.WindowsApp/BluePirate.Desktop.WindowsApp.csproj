@@ -5,16 +5,11 @@
     <UseWPF>true</UseWPF>
   </PropertyGroup>
   <ItemGroup>
-    <None Remove="WIN_20231006_20_03_49_Pro.jpg" />
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="Extended.Wpf.Toolkit" Version="4.6.0" />
+    <PackageReference Include="log4net" Version="2.0.15" />
     <PackageReference Include="MaterialDesignThemes" Version="4.9.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\BluePirate.Desktop.ConsolePlayground.Bluetooth\BluePirate.Desktop.ConsolePlayground.Bluetooth.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="WIN_20231006_20_03_49_Pro.jpg" />
   </ItemGroup>
 </Project>

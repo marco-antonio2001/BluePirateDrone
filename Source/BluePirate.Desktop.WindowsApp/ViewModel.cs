@@ -18,15 +18,13 @@ namespace BluePirate.Desktop.WindowsApp
         private GattServiceKVP _selectedGattServicesKVP;
         private ObservableCollection<GattCharacteristicKVP> _gattCharacteristicsKVP;
         private GattCharacteristicKVP _selectedGattCharacteristicsKVP;
-
         private DroneAHRS _droneAHRS;
-        private float _roll;
-        private float _pitch;
 
         public ViewModel()
         {
             DroneAHRSSetPoint = new AttitudeSetPoint();
             DronePIDConfigValue = new DronePIDConfig();
+            DroneAHRSValue = new DroneAHRS();
         }
 
         public ObservableCollection<KeyValuePairModel> KeyValuePairs
@@ -127,32 +125,6 @@ namespace BluePirate.Desktop.WindowsApp
 
         public DronePIDConfig DronePIDConfigValue { get; set; }
 
-
-        public float DroneRoll
-        {
-            get { return _roll; }
-            set
-            {
-                if (_roll != value)
-                {
-                    _roll = value;
-                    OnPropertyChanged(nameof(DroneRoll));
-                }
-            }
-        }
-
-        public float DronePitch
-        {
-            get { return _pitch; }
-            set
-            {
-                if (_pitch != value)
-                {
-                    _pitch = value;
-                    OnPropertyChanged(nameof(DronePitch));
-                }
-            }
-        }
 
         public void ClearLocalVariables()
         {

@@ -18,6 +18,8 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Windows.Devices.Bluetooth.GenericAttributeProfile;
 
+[assembly: log4net.Config.XmlConfigurator(Watch =true)]
+
 namespace BluePirate.Desktop.WindowsApp
 {
     /// <summary>
@@ -25,9 +27,10 @@ namespace BluePirate.Desktop.WindowsApp
     /// </summary>
     public partial class MainWindow : Window
     {
-
+        private static readonly log4net.ILog log = log4net.LogManager.GetLogger("WindowsApp.cs");
         static public BluePirateBluetoothLEAdvertisementWatcher watcher;
         ViewModel viewModel = new ViewModel();
+        bool loggerEnabled = false;
         public MainWindow()
         {
             watcher = new BluePirateBluetoothLEAdvertisementWatcher();
@@ -40,7 +43,12 @@ namespace BluePirate.Desktop.WindowsApp
                 //viewModel.ClearLocalVariables();
             };
             watcher.DeviceTimedout += (device) => { viewModel.KeyValuePairs = new ObservableCollection<KeyValuePairModel>(watcher.DiscoredDevices.Select(kvp => new KeyValuePairModel { Key = kvp.Name, Value = kvp })); };
-            watcher.SubscribedValueChanged += (ahrs) => { viewModel.DronePitch = watcher.droneAHRS.pitch; viewModel.DroneRoll = watcher.droneAHRS.roll; };
+            watcher.SubscribedValueChanged += (ahrs) =>
+            {
+                viewModel.DroneAHRSValue = watcher.droneAHRS;
+                if (loggerEnabled)
+                    log.Info(watcher.droneAHRS);
+            };
 
             watcher.StartListening();
             InitializeComponent();
@@ -106,45 +114,6 @@ namespace BluePirate.Desktop.WindowsApp
             tcs.Task.Wait();
         }
 
-        private void listViewDeviceGattServices_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            //when the user selects a service uuid from list get all of the service char 
-
-            //get service Chars
-            if (viewModel.SelectedGattServiceKVP == null)
-                return;
-
-            var tcs = new TaskCompletionSource<bool>();
-
-            Task.Run(async () =>
-            {
-                try
-                {
-                    //return all char for device
-                    var rst = await watcher.GetResultOfServiceCharacteristicsAsync(viewModel.SelectedGattServiceKVP.Value);
-                    if (rst.Status == GattCommunicationStatus.Success)
-                    {
-                        viewModel.GattCharacteristics = new ObservableCollection<GattCharacteristicKVP>(rst.Characteristics.Select(kvp => new GattCharacteristicKVP { Key = kvp.Uuid.ToString(), Value = kvp }));
-                    }
-                    Debug.WriteLine($"testing the connection");
-                }
-                catch (Exception e) 
-                {
-                    Debug.WriteLine(e);
-                }
-                finally
-                {
-                    //anything goes wrong exit task
-                    tcs.SetResult(false);
-
-                }
-                tcs.TrySetResult(true);
-            });
-
-            tcs.Task.Wait();
-
-        }
-
 
 
         private void btnWriteSetPointToDrone_Click(object sender, RoutedEventArgs e)
@@ -199,6 +168,19 @@ namespace BluePirate.Desktop.WindowsApp
                 });
 
                 tcs.Task.Wait();
+        }
+
+        private void cBoxLogData_Checked(object sender, RoutedEventArgs e)
+        {
+            //start logger... enable 
+            loggerEnabled = true;
+            log.Info("Roll,Pitch,Yaw,Heading");
+        }
+
+        private void cBoxLogData_UnChecked(object sender, RoutedEventArgs e)
+        {
+            //stop logger... disable logger
+            loggerEnabled = false;
         }
     }
 }

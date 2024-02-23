@@ -18,7 +18,7 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
 
         public override string ToString()
         {
-            return $"Roll: {roll} Pitch: {pitch} Yaw: {yaw} Heading: {heading} TimeStamp: {timeStamp}";
+            return $"{roll},{pitch},{yaw},{heading}";
         }
     }
 
