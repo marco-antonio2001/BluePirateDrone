@@ -255,28 +255,55 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
             
         }
 
-
-        //TODO: break down and fix need to subscribe in a higher module
-        public async Task SubscribeToCharacteristicsAsync(string deviceId)
+        public async Task<bool> ConnectToDeviceAsync(string deviceID) 
         {
-            using var device = await BluetoothLEDevice.FromIdAsync(deviceId);
+            using var device = await BluetoothLEDevice.FromIdAsync(deviceID);
             if (device == null)
                 throw new ArgumentNullException("Failed to get information from device");
             device.ConnectionStatusChanged += Device_ConnectionStatusChanged;
             var serviceResults = await device.GetGattServicesAsync();
+
+            if (serviceResults.Status != GattCommunicationStatus.Success) 
+            {
+                Debug.WriteLine($"Could not get services available from device... status: {serviceResults.Status}");
+                return false;
+            }
             //filter and find first service with the specified UUID
             GattDeviceService service = serviceResults.Services.FirstOrDefault(s => s.Uuid == AHRSServiceGuid);
 
             if (service == null)
-                return;
-            Debug.WriteLine($"Service found getting Chars{service.Uuid}");
-            mGattCharacteristicsResult = await service.GetCharacteristicsAsync();
+            {
+                Debug.WriteLine($"Could not find service with uuid {AHRSServiceGuid} ......");
+                return false;
+            }
+            Debug.WriteLine($"Service found getting Chars for {service.Uuid}");
+            try
+            {
+                mGattCharacteristicsResult = await service.GetCharacteristicsAsync();
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine($"Failed to get characteristes from service {service.Uuid}......{e}");
+            }
             Debug.WriteLine($"Char async stat results: {mGattCharacteristicsResult.Status}");
-
             if (mGattCharacteristicsResult.Status == GattCommunicationStatus.Success)
             {
                 mGattDeviceService = service;
                 mGattDeviceService.Session.MaintainConnection = true;
+            }
+            return true;
+        }
+
+        //TODO: break down and fix need to subscribe in a higher module
+        public async Task SubscribeToCharacteristicsAsync()
+        {
+            if (mGattCharacteristicsResult == null)
+            {
+                Debug.WriteLine("Gatt Chars are null ... connect to device first");
+                return;
+            }
+            if (mGattCharacteristicsResult.Status == GattCommunicationStatus.Success)
+            {
                 Characteristic = mGattCharacteristicsResult.Characteristics.FirstOrDefault(c => c.Uuid == AHRSCharacteristicGuid);
                 if (Characteristic == null) return;
                 GattCharacteristicProperties properties = Characteristic.CharacteristicProperties;
@@ -290,6 +317,7 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
                     if (status == GattCommunicationStatus.Success)
                     {
                         Characteristic.ValueChanged += Characteristic_ValueChanged;
+                        
                         // Server has been informed of clients interest.
                     }
                 }

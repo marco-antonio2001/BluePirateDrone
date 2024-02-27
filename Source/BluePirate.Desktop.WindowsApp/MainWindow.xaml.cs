@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -47,7 +48,7 @@ namespace BluePirate.Desktop.WindowsApp
             {
                 viewModel.DroneAHRSValue = watcher.droneAHRS;
                 if (loggerEnabled)
-                    log.Info(watcher.droneAHRS);
+                    log.Info($"{watcher.droneAHRS},{viewModel.DroneAHRSSetPoint}");
             };
 
             watcher.StartListening();
@@ -99,7 +100,12 @@ namespace BluePirate.Desktop.WindowsApp
 
 
                     Debug.WriteLine($"Attempting to connect to device {devicekvp.DeviceId}");
-                    await watcher.SubscribeToCharacteristicsAsync(devicekvp.DeviceId);
+                    if (!await watcher.ConnectToDeviceAsync(devicekvp.DeviceId))
+                    {
+                        Debug.WriteLine("Failed to establish connection with device....");
+                        return;
+                    }
+                    await watcher.SubscribeToCharacteristicsAsync();
                     Debug.WriteLine($"Device connected: {devicekvp.Connected}");
                 }
                 finally
@@ -146,7 +152,6 @@ namespace BluePirate.Desktop.WindowsApp
         private void btnWritePidValues_Click(object sender, RoutedEventArgs e)
         {
             var tcs = new TaskCompletionSource<bool>();
-
                 Task.Run(async () =>
                 {
                     try
@@ -154,9 +159,9 @@ namespace BluePirate.Desktop.WindowsApp
                         //return all char for device
                         await watcher.WriteToCharacteristicPIDConfig(viewModel.DronePIDConfigValue);
                     }
-                    catch (Exception e)
+                    catch (Exception ex)
                     {
-                        Debug.WriteLine(e);
+                        Debug.WriteLine(ex);
                     }
                     finally
                     {
@@ -172,15 +177,38 @@ namespace BluePirate.Desktop.WindowsApp
 
         private void cBoxLogData_Checked(object sender, RoutedEventArgs e)
         {
+            //delete old data in file
+            string filePath = @"C:\Users\marco\source\repos\BluePirate\output\flightData.txt"; // Replace with the actual file path
+
+            if (File.Exists(filePath))
+            {
+                try
+                {
+                    File.Delete(filePath);
+                    Console.WriteLine("File deleted successfully.");
+                }
+                catch (IOException ex)
+                {
+                    Console.WriteLine("Error deleting file: {0}", ex.Message);
+                }
+            }
+            else
+            {
+                Console.WriteLine("File does not exist.");
+            }
             //start logger... enable 
             loggerEnabled = true;
-            log.Info("Roll,Pitch,Yaw,Heading");
+            log.Info("Roll,Pitch,Yaw,Heading,Roll Setpoint,Pitch Setpoint");
         }
 
         private void cBoxLogData_UnChecked(object sender, RoutedEventArgs e)
         {
             //stop logger... disable logger
             loggerEnabled = false;
+        }
+
+        private void txtboxRollSetPoint_TextChanged(object sender, TextChangedEventArgs e)
+        {
         }
     }
 }

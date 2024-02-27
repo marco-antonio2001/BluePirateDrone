@@ -13,6 +13,11 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
         public float roll { get; set; }      /* rotation around x axis in degrees */
         public float pitch { get; set; }    /* rotation around y axis in degrees */
         public float yaw { get; set; }       /* rotation around z axis in degrees */
+
+        public override string ToString()
+        {
+            return $"{roll},{pitch}";
+        }
     }
 
 }
