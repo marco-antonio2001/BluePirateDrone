@@ -85,7 +85,7 @@
             <Button x:Name="btnConnectToSelectedBLEDevice" Content="Connect" HorizontalAlignment="Left" Margin="12,122,0,0" VerticalAlignment="Top" Width="243" Click="btnConnectToSelectedBLEDevice_Click"/>
 
             <Button x:Name="btnWriteSetPointToDrone" Content="Write Attitude sp" HorizontalAlignment="Left" Margin="536,130,0,0" VerticalAlignment="Top" Width="198" Click="btnWriteSetPointToDrone_Click"/>
-            <TextBox x:Name="txtboxRollSetPoint" HorizontalAlignment="Left" Margin="536,102,0,0" TextWrapping="Wrap" Text="{Binding DroneAHRSSetPoint.roll, Mode=TwoWay, StringFormat=\{0:F2\}, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Top" Width="96" TextChanged="txtboxRollSetPoint_TextChanged"/>
+            <TextBox x:Name="txtboxRollSetPoint" HorizontalAlignment="Left" Margin="536,102,0,0" TextWrapping="Wrap" Text="{Binding DroneAHRSSetPoint.roll, Mode=TwoWay, StringFormat=\{0:F2\}, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Top" Width="96"/>
             <TextBox x:Name="txtboxPitchSetPoint" HorizontalAlignment="Left" Margin="636,102,0,0" TextWrapping="Wrap" Text="{Binding DroneAHRSSetPoint.pitch, Mode=TwoWay, StringFormat=\{0:F2\}, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Top" Width="98"/>
 
             <materialDesign:Chip Content="Setpnt Roll" Margin="536,65,0,0" VerticalAlignment="Top" Width="96" IsEnabled="False"/>

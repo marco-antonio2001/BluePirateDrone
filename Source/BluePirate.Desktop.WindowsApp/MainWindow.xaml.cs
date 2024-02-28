@@ -36,8 +36,16 @@ namespace BluePirate.Desktop.WindowsApp
         bool loggerEnabled = false;
         public MainWindow()
         {
+            //sets python dll path
             Runtime.PythonDLL = "C:\\Users\\marco\\AppData\\Local\\Programs\\Python\\Python311\\python311.dll";
+            //initializes python engine
             PythonEngine.Initialize();
+            //on window close even we need to shutdown the python engine
+            Closed += (obj, e) =>
+            {
+                Console.WriteLine("Window is closing! shutting down python engine!");
+                PythonEngine.Shutdown();
+            };
             watcher = new BluePirateBluetoothLEAdvertisementWatcher();
             watcher.DeviceDiscovered += (device) =>
             {
@@ -211,23 +219,16 @@ namespace BluePirate.Desktop.WindowsApp
             loggerEnabled = false;
         }
 
-        private void txtboxRollSetPoint_TextChanged(object sender, TextChangedEventArgs e)
-        {
-        }
-
         private void btnPlotFlightData_Click(object sender, RoutedEventArgs e)
         {
             using (Py.GIL())
             {
                 dynamic sys = Py.Import("sys");
                 sys.path.append(@"C:\Users\marco\source\repos\BluePirate\Source\BluePirate.Desktop.WindowsApp");
-                var fligthDataFilePathParam = new PyString(flightDataFilePath); 
+                var fligthDataFilePathParam = new PyString(flightDataFilePath);
                 var pythonScript = Py.Import("flightDataVisualizer");
-                var result = pythonScript.InvokeMethod("analyseData",new PyObject[] {fligthDataFilePathParam});
-                Console.WriteLine($"{result}");
+                pythonScript.InvokeMethod("analyseData", new PyObject[] { fligthDataFilePathParam });
             }
-            
-            
 
         }
     }
