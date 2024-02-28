@@ -1,5 +1,6 @@
 ﻿using BluePirate.Desktop.ConsolePlayground.Bluetooth;
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -83,8 +84,12 @@ namespace BluePirate.Desktop.Playground
                             //try and pair
                             try
                             {
-                                //await watcher.PairToDeviceAsync(droneDevice.DeviceId);
-                                await watcher.SubscribeToCharacteristicsAsync(droneDevice.DeviceId);
+                                if(!await watcher.ConnectToDeviceAsync(droneDevice.DeviceId))
+                                {
+                                    Debug.WriteLine("Failed to establish connection with device....");
+                                    continue;
+                                }
+                                await watcher.SubscribeToCharacteristicsAsync();
                             }
                             catch (Exception e)
                             {
