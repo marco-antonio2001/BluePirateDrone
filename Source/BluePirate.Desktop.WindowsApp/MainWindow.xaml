@@ -102,6 +102,7 @@
             <Label x:Name="lblActualPitch" Content="Pitch" HorizontalAlignment="Left" Margin="414,5,0,0" VerticalAlignment="Top" FontSize="14"/>
             <Label x:Name="lblActualRoll" Content="Roll" HorizontalAlignment="Left" Margin="342,5,0,0" VerticalAlignment="Top" FontSize="14"/>
             <CheckBox x:Name="cBoxLogData" Content="Log Data" HorizontalAlignment="Left" Margin="538,30,0,0" VerticalAlignment="Top" Unchecked="cBoxLogData_UnChecked" Checked="cBoxLogData_Checked" IsChecked="False"/>
+            <Button x:Name="btnPlotFlightData" Content="Plot Data" HorizontalAlignment="Left" Margin="640,23,0,0" VerticalAlignment="Top" Width="92" Click="btnPlotFlightData_Click"/>
         </Grid>
     </Viewbox>
 </Window>

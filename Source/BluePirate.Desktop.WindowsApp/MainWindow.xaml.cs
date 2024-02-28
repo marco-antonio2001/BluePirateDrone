@@ -1,5 +1,6 @@
 ﻿using BluePirate.Desktop.ConsolePlayground.Bluetooth;
 using BluePirate.Desktop.WindowsApp.Models;
+using Python.Runtime;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -28,12 +29,15 @@ namespace BluePirate.Desktop.WindowsApp
     /// </summary>
     public partial class MainWindow : Window
     {
+        private static string flightDataFilePath = "C:/Users/marco/source/repos/BluePirate/output/flightData.txt";
         private static readonly log4net.ILog log = log4net.LogManager.GetLogger("WindowsApp.cs");
         static public BluePirateBluetoothLEAdvertisementWatcher watcher;
         ViewModel viewModel = new ViewModel();
         bool loggerEnabled = false;
         public MainWindow()
         {
+            Runtime.PythonDLL = "C:\\Users\\marco\\AppData\\Local\\Programs\\Python\\Python311\\python311.dll";
+            PythonEngine.Initialize();
             watcher = new BluePirateBluetoothLEAdvertisementWatcher();
             watcher.DeviceDiscovered += (device) =>
             {
@@ -209,6 +213,22 @@ namespace BluePirate.Desktop.WindowsApp
 
         private void txtboxRollSetPoint_TextChanged(object sender, TextChangedEventArgs e)
         {
+        }
+
+        private void btnPlotFlightData_Click(object sender, RoutedEventArgs e)
+        {
+            using (Py.GIL())
+            {
+                dynamic sys = Py.Import("sys");
+                sys.path.append(@"C:\Users\marco\source\repos\BluePirate\Source\BluePirate.Desktop.WindowsApp");
+                var fligthDataFilePathParam = new PyString(flightDataFilePath); 
+                var pythonScript = Py.Import("flightDataVisualizer");
+                var result = pythonScript.InvokeMethod("analyseData",new PyObject[] {fligthDataFilePathParam});
+                Console.WriteLine($"{result}");
+            }
+            
+            
+
         }
     }
 }
