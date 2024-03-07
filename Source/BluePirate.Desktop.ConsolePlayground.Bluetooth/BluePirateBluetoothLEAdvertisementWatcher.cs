@@ -285,12 +285,19 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
             {
                 Debug.WriteLine($"Failed to get characteristes from service {service.Uuid}......{e}");
             }
-            Debug.WriteLine($"Char async stat results: {mGattCharacteristicsResult.Status}");
-            if (mGattCharacteristicsResult.Status == GattCommunicationStatus.Success)
+            if (mGattCharacteristicsResult == null) 
             {
-                mGattDeviceService = service;
-                mGattDeviceService.Session.MaintainConnection = true;
+                Debug.WriteLine($"Could not get characteristics from service with uuid {AHRSServiceGuid} ...... try again..");
+                return false;
             }
+            Debug.WriteLine($"Char async stat results: {mGattCharacteristicsResult.Status}");
+            if (mGattCharacteristicsResult.Status != GattCommunicationStatus.Success)
+            {
+                Debug.WriteLine($"Returning from function as false... status was {mGattCharacteristicsResult.Status}");
+                return false;
+            }
+            mGattDeviceService = service;
+            mGattDeviceService.Session.MaintainConnection = true;
             return true;
         }
 

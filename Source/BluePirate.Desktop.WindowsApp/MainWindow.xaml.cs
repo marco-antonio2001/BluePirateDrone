@@ -1,5 +1,6 @@
 ﻿using BluePirate.Desktop.ConsolePlayground.Bluetooth;
 using BluePirate.Desktop.WindowsApp.Models;
+using HelixToolkit.Wpf;
 using Python.Runtime;
 using System;
 using System.Collections.Generic;
@@ -7,6 +8,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -16,6 +18,7 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Media.Media3D;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Windows.Devices.Bluetooth.GenericAttributeProfile;
@@ -34,6 +37,10 @@ namespace BluePirate.Desktop.WindowsApp
         static public BluePirateBluetoothLEAdvertisementWatcher watcher;
         ViewModel viewModel = new ViewModel();
         bool loggerEnabled = false;
+
+        private const string MODEL_PATH = "D:/vs/display3D-master/Display3DModel/bicycle.stl";
+        public object FilDia { get; private set; }
+
         public MainWindow()
         {
             //sets python dll path
@@ -65,11 +72,31 @@ namespace BluePirate.Desktop.WindowsApp
 
             watcher.StartListening();
             InitializeComponent();
-
             viewModel.KeyValuePairs = new ObservableCollection<KeyValuePairModel>(watcher.DiscoredDevices.Select(kvp => new KeyValuePairModel { Key = kvp.Name, Value = kvp }));
-
             DataContext = viewModel;
+
+            Loaded += (e, a) => { Setup3dModelScene(); };
         }
+
+
+        private void Setup3dModelScene() 
+        {
+            ModelImporter import = new ModelImporter();
+            Model3DGroup model1 = import.Load(@"C:\Users\marco\source\repos\BluePirate\Source\BluePirate.Core\arduinoBle3dModel.obj");
+            model.Content = model1;
+            //sets the model centre for rotation // wiring for the viewmodel for binding
+            viewModel.modelCenterX = model.Content.Bounds.GetCenter().X;
+            viewModel.modelCenterY = model.Content.Bounds.GetCenter().Y;
+            viewModel.modelCenterZ = model.Content.Bounds.GetCenter().Z;
+
+            helixViewPort.FixedRotationPointEnabled = true;
+            helixViewPort.FixedRotationPoint = new Point3D(viewModel.modelCenterX, viewModel.modelCenterY, viewModel.modelCenterZ);
+            helixViewPort.Camera.LookDirection = new Vector3D(viewModel.modelCenterX,viewModel.modelCenterY,viewModel.modelCenterZ);
+            helixViewPort.ShowCameraTarget = true;
+            helixViewPort.CameraController.CameraTarget = new Point3D(viewModel.modelCenterX, viewModel.modelCenterY, viewModel.modelCenterZ);
+
+        }
+
 
         private void btnBLEStartListening_Click(object sender, RoutedEventArgs e)
         {
@@ -97,11 +124,12 @@ namespace BluePirate.Desktop.WindowsApp
             //null gaurd
             if (devicekvp == null)
                 return;
+           
 
             var tcs = new TaskCompletionSource<bool>();
-
             Task.Run(async () =>
             {
+                viewModel.IsConnectToDroneBtnEnabled = false;
                 try
                 {
                     //return all services for device
@@ -118,18 +146,31 @@ namespace BluePirate.Desktop.WindowsApp
                         return;
                     }
                     await watcher.SubscribeToCharacteristicsAsync();
+                    this.btnConnectToSelectedBLEDevice.IsEnabled=true;
                     Debug.WriteLine($"Device connected: {devicekvp.Connected}");
                 }
                 finally
                 {
                     //anything goes wrong exit task
+                    //enable connect button again but keep write to drone btns disabled
+                    viewModel.IsWriteSetPointBtnEnabled = false;
+                    viewModel.IsWritePIDConstantsBtnEnabled = false;
+                    viewModel.IsConnectToDroneBtnEnabled= true;
                     tcs.SetResult(false);
 
                 }
+
+                //enable button controls 
+                viewModel.IsWriteSetPointBtnEnabled = true;
+                viewModel.IsWritePIDConstantsBtnEnabled = true;
+                viewModel.IsConnectToDroneBtnEnabled = true;
+
+                //set task true
                 tcs.TrySetResult(true);
             });
 
-            tcs.Task.Wait();
+            //tcs.Task.Wait();
+
         }
 
 
@@ -163,6 +204,7 @@ namespace BluePirate.Desktop.WindowsApp
 
         private void btnWritePidValues_Click(object sender, RoutedEventArgs e)
         {
+            btnWritePidValues.IsEnabled = false;
             var tcs = new TaskCompletionSource<bool>();
                 Task.Run(async () =>
                 {
@@ -177,14 +219,16 @@ namespace BluePirate.Desktop.WindowsApp
                     }
                     finally
                     {
+                        btnWritePidValues.IsEnabled = true;
                         //anything goes wrong exit task
                         tcs.SetResult(false);
 
                     }
+                    btnWritePidValues.IsEnabled = true;
                     tcs.TrySetResult(true);
                 });
 
-                tcs.Task.Wait();
+            tcs.Task.Wait();
         }
 
         private void cBoxLogData_Checked(object sender, RoutedEventArgs e)

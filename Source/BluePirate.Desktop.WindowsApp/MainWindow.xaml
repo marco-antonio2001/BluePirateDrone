@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:BluePirate.Desktop.WindowsApp" xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes" x:Class="BluePirate.Desktop.WindowsApp.MainWindow"
+        xmlns:local="clr-namespace:BluePirate.Desktop.WindowsApp" xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes" xmlns:helix="http://helix-toolkit.org/wpf" x:Class="BluePirate.Desktop.WindowsApp.MainWindow"
         d:DataContext="{d:DesignInstance Type={x:Type local:ViewModel}}"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="746"
@@ -15,45 +15,29 @@
     <Viewbox Stretch="Fill" StretchDirection="Both">
 
         <Grid>
-            <Viewport3D x:Name="viewport3D1" Margin="0,10,0,-10">
-                <Viewport3D.Camera>
-                    <PerspectiveCamera x:Name="camMain" Position="6 5 4" LookDirection="-6.4 -5.8 -4"/>
-                </Viewport3D.Camera>
-                <ModelVisual3D>
-                    <ModelVisual3D.Content>
-                        <DirectionalLight x:Name="dirLightMain" Direction="-1,-1,-1"/>
-                    </ModelVisual3D.Content>
-                </ModelVisual3D>
-                <ModelVisual3D x:Name="MyModel">
-                    <ModelVisual3D.Content>
-                        <GeometryModel3D>
-                            <GeometryModel3D.Geometry>
-                                <MeshGeometry3D x:Name="meshMain"
-                                Positions="0,0,0 1.5,0,0 0,0.5,0 1.5,0.5,0 0,0,1 1.5,0,1 0,0.5,1 1.5,0.5,1"
-                                TriangleIndices="2 3 1  2 1 0  7 1 3  7 5 1  6 5 7  6 4 5  6 2 0  2 0 4  2 7 3  2 6 7  0 1 5  0 5 4"/>
-                            </GeometryModel3D.Geometry>
-                            <GeometryModel3D.Material>
-                                <DiffuseMaterial x:Name="matDiffuseMain" Brush="LightBlue"/>
-                            </GeometryModel3D.Material>
-                        </GeometryModel3D>
-                    </ModelVisual3D.Content>
+            <helix:HelixViewport3D x:Name="helixViewPort" Background="GhostWhite">
+                <helix:HelixViewport3D.Camera>
+                    <PerspectiveCamera  Position="15 -170 110" LookDirection="0 1 -0.5"/>
+                </helix:HelixViewport3D.Camera>
+                <helix:DefaultLights></helix:DefaultLights>
+                <ModelVisual3D x:Name="model" >
                     <ModelVisual3D.Transform>
                         <Transform3DGroup >
-                            <RotateTransform3D CenterX="0.75" CenterY="0.25" CenterZ="0.5">
+                            <RotateTransform3D CenterX= "20.854841799999985" CenterY="8.889968436645" CenterZ="0">
                                 <RotateTransform3D.Rotation>
                                     <AxisAngleRotation3D Axis="1 0 0" Angle="{Binding DroneAHRSValue.roll, UpdateSourceTrigger=PropertyChanged}" />
                                 </RotateTransform3D.Rotation>
                             </RotateTransform3D>
 
-                            <RotateTransform3D CenterX="0.75" CenterY="0.25" CenterZ="0.5">
+                            <RotateTransform3D  CenterX= "20.854841799999985" CenterY="8.889968436645" CenterZ="0">
                                 <RotateTransform3D.Rotation>
-                                    <AxisAngleRotation3D Axis="0 0 1" Angle="{Binding DroneAHRSValue.pitch, UpdateSourceTrigger=PropertyChanged}" />
+                                    <AxisAngleRotation3D Axis="0 1 0" Angle="{Binding DroneAHRSValue.pitch, UpdateSourceTrigger=PropertyChanged}" />
                                 </RotateTransform3D.Rotation>
                             </RotateTransform3D>
                         </Transform3DGroup>
                     </ModelVisual3D.Transform>
                 </ModelVisual3D>
-            </Viewport3D>
+            </helix:HelixViewport3D>
 
             <Rectangle HorizontalAlignment="Center" Height="59" VerticalAlignment="Top" Width="746" Fill="{DynamicResource MaterialDesignTextFieldBoxBackground}"/>
 
@@ -71,20 +55,11 @@
                     </GridView>
                 </ListView.View>
             </ListView>
-            <Button x:Name="btnBLEStartListening" Content="Start Watcher" HorizontalAlignment="Left" Margin="12,71,0,0" VerticalAlignment="Top" Width="120" Click="btnBLEStartListening_Click" RenderTransformOrigin="0.5,0.5">
-                <Button.RenderTransform>
-                    <TransformGroup>
-                        <ScaleTransform/>
-                        <SkewTransform/>
-                        <RotateTransform Angle="-0.247"/>
-                        <TranslateTransform/>
-                    </TransformGroup>
-                </Button.RenderTransform>
-            </Button>
-            <Button x:Name="btnBLEStopListening" Content="Stop Watcher" HorizontalAlignment="Left" Margin="134,71,0,0" VerticalAlignment="Top" Width="121" Click="btnBLEStopListening_Click"/>
-            <Button x:Name="btnConnectToSelectedBLEDevice" Content="Connect" HorizontalAlignment="Left" Margin="12,122,0,0" VerticalAlignment="Top" Width="243" Click="btnConnectToSelectedBLEDevice_Click"/>
+            <Button x:Name="btnBLEStartListening" Content="Start Watcher" HorizontalAlignment="Left" Margin="12,71,0,0" VerticalAlignment="Top" Width="120" Click="btnBLEStartListening_Click" RenderTransformOrigin="0.5,0.5" Style="{StaticResource MaterialDesignFlatDarkButton}"/>
+            <Button x:Name="btnBLEStopListening" Content="Stop Watcher" HorizontalAlignment="Left" Margin="134,71,0,0" VerticalAlignment="Top" Width="121" Click="btnBLEStopListening_Click" Style="{StaticResource MaterialDesignFlatDarkButton}"/>
+            <Button x:Name="btnConnectToSelectedBLEDevice" Content="Connect" HorizontalAlignment="Left" Margin="12,122,0,0" VerticalAlignment="Top" Width="243" Click="btnConnectToSelectedBLEDevice_Click" Style="{StaticResource MaterialDesignFlatDarkButton}" IsEnabled="{Binding IsConnectToDroneBtnEnabled,UpdateSourceTrigger=PropertyChanged}"/>
 
-            <Button x:Name="btnWriteSetPointToDrone" Content="Write Attitude sp" HorizontalAlignment="Left" Margin="536,130,0,0" VerticalAlignment="Top" Width="198" Click="btnWriteSetPointToDrone_Click"/>
+            <Button x:Name="btnWriteSetPointToDrone" Content="Write Attitude sp" HorizontalAlignment="Left" Margin="536,130,0,0" VerticalAlignment="Top" Width="198" Click="btnWriteSetPointToDrone_Click" Style="{StaticResource MaterialDesignFlatDarkButton}" IsEnabled="{Binding IsWriteSetPointBtnEnabled,UpdateSourceTrigger=PropertyChanged}"/>
             <TextBox x:Name="txtboxRollSetPoint" HorizontalAlignment="Left" Margin="536,102,0,0" TextWrapping="Wrap" Text="{Binding DroneAHRSSetPoint.roll, Mode=TwoWay, StringFormat=\{0:F2\}, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Top" Width="96"/>
             <TextBox x:Name="txtboxPitchSetPoint" HorizontalAlignment="Left" Margin="636,102,0,0" TextWrapping="Wrap" Text="{Binding DroneAHRSSetPoint.pitch, Mode=TwoWay, StringFormat=\{0:F2\}, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Top" Width="98"/>
 
@@ -98,11 +73,11 @@
             <materialDesign:Chip Content="Roll Ki" Margin="640,233,0,0" VerticalAlignment="Top" Width="96" IsEnabled="False"/>
             <TextBox x:Name="txtboxRollKd" HorizontalAlignment="Left" Margin="536,339,0,0" TextWrapping="Wrap" Text="{Binding DronePIDConfigValue.MKd, Mode=TwoWay, StringFormat=\{0:F2\}, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Top" Width="98"/>
             <materialDesign:Chip Content="Roll Kd" Margin="538,302,0,0" VerticalAlignment="Top" Width="96" IsEnabled="False"/>
-            <Button x:Name="btnWritePidValues" Content="Write PID Values" HorizontalAlignment="Left" Margin="536,367,0,0" VerticalAlignment="Top" Width="198" Click="btnWritePidValues_Click" />
+            <Button x:Name="btnWritePidValues" Content="Write PID Values" HorizontalAlignment="Left" Margin="536,367,0,0" VerticalAlignment="Top" Width="198" Click="btnWritePidValues_Click" Style="{StaticResource MaterialDesignFlatDarkButton}" IsEnabled="{Binding IsWritePIDConstantsBtnEnabled,UpdateSourceTrigger=PropertyChanged}" />
             <Label x:Name="lblActualPitch" Content="Pitch" HorizontalAlignment="Left" Margin="414,5,0,0" VerticalAlignment="Top" FontSize="14"/>
             <Label x:Name="lblActualRoll" Content="Roll" HorizontalAlignment="Left" Margin="342,5,0,0" VerticalAlignment="Top" FontSize="14"/>
             <CheckBox x:Name="cBoxLogData" Content="Log Data" HorizontalAlignment="Left" Margin="538,30,0,0" VerticalAlignment="Top" Unchecked="cBoxLogData_UnChecked" Checked="cBoxLogData_Checked" IsChecked="False"/>
-            <Button x:Name="btnPlotFlightData" Content="Plot Data" HorizontalAlignment="Left" Margin="640,23,0,0" VerticalAlignment="Top" Width="92" Click="btnPlotFlightData_Click"/>
+            <Button x:Name="btnPlotFlightData" Content="Plot Data" HorizontalAlignment="Left" Margin="640,23,0,0" VerticalAlignment="Top" Width="92" Click="btnPlotFlightData_Click" Style="{StaticResource MaterialDesignFlatDarkButton}"/>
         </Grid>
     </Viewbox>
 </Window>

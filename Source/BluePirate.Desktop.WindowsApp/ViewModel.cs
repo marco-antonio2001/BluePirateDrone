@@ -19,12 +19,20 @@ namespace BluePirate.Desktop.WindowsApp
         private ObservableCollection<GattCharacteristicKVP> _gattCharacteristicsKVP;
         private GattCharacteristicKVP _selectedGattCharacteristicsKVP;
         private DroneAttitude _droneAHRS;
+        private bool _isWriteSetPointBtnEnabled = false;
+        private bool _isWritePIDConstantsBtnEnabled = false;
+        private bool _isConnectToDroneBtnEnabled = true;
+
+
 
         public ViewModel()
         {
             DroneAHRSSetPoint = new DroneAttitude();
             DronePIDConfigValue = new DronePIDConfig();
             DroneAHRSValue = new DroneAttitude();
+            modelCenterX = 0;
+            modelCenterY = 0;
+            modelCenterZ = 0;
         }
 
         public ObservableCollection<KeyValuePairModel> KeyValuePairs
@@ -67,7 +75,44 @@ namespace BluePirate.Desktop.WindowsApp
             
         }
 
+        public bool IsConnectToDroneBtnEnabled
+        {
+            get { return _isConnectToDroneBtnEnabled; }
+            set
+            {
+                if (_isConnectToDroneBtnEnabled != value)
+                {
+                    _isConnectToDroneBtnEnabled = value;
+                    OnPropertyChanged(nameof(IsConnectToDroneBtnEnabled));
+                }
+            }
+        }
 
+        public bool IsWritePIDConstantsBtnEnabled
+        {
+            get { return _isWritePIDConstantsBtnEnabled; }
+            set
+            {
+                if (_isWritePIDConstantsBtnEnabled != value)
+                {
+                    _isWritePIDConstantsBtnEnabled = value;
+                    OnPropertyChanged(nameof(IsWritePIDConstantsBtnEnabled));
+                }
+            }
+        }
+
+        public bool IsWriteSetPointBtnEnabled
+        {
+            get { return _isWriteSetPointBtnEnabled; }
+            set
+            {
+                if (_isWriteSetPointBtnEnabled != value)
+                {
+                    _isWriteSetPointBtnEnabled = value;
+                    OnPropertyChanged(nameof(IsWriteSetPointBtnEnabled));
+                }
+            }
+        }
 
         public GattCharacteristicKVP SelectedGattCharacteristicsKVP
         {
@@ -124,6 +169,11 @@ namespace BluePirate.Desktop.WindowsApp
         }
 
         public DronePIDConfig DronePIDConfigValue { get; set; }
+
+        public double modelCenterX { get; set; }
+        public double modelCenterY { get; set; }
+        public double modelCenterZ { get; set; }
+
 
 
         public void ClearLocalVariables()
