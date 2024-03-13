@@ -10,8 +10,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BluePirate.Core", "Source\B
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BluePirate.Desktop.ConsolePlayground.Bluetooth", "Source\BluePirate.Desktop.ConsolePlayground.Bluetooth\BluePirate.Desktop.ConsolePlayground.Bluetooth.csproj", "{29CA919C-EFB9-4B2E-9E06-80A824CACA7B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BluePirate.Desktop.Playground", "Source\BluePirate.Desktop.Playground\BluePirate.Desktop.Playground.csproj", "{CD2F7C3F-460C-4DBB-801D-531B00981115}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BluePirate.Desktop.WindowsApp", "Source\BluePirate.Desktop.WindowsApp\BluePirate.Desktop.WindowsApp.csproj", "{8D0BB69E-1BB7-41D5-A55F-E0E247B203BF}"
 EndProject
 Global
@@ -68,26 +66,6 @@ Global
 		{29CA919C-EFB9-4B2E-9E06-80A824CACA7B}.Release|x64.Build.0 = Release|Any CPU
 		{29CA919C-EFB9-4B2E-9E06-80A824CACA7B}.Release|x86.ActiveCfg = Release|Any CPU
 		{29CA919C-EFB9-4B2E-9E06-80A824CACA7B}.Release|x86.Build.0 = Release|Any CPU
-		{CD2F7C3F-460C-4DBB-801D-531B00981115}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CD2F7C3F-460C-4DBB-801D-531B00981115}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CD2F7C3F-460C-4DBB-801D-531B00981115}.Debug|ARM.ActiveCfg = Debug|Any CPU
-		{CD2F7C3F-460C-4DBB-801D-531B00981115}.Debug|ARM.Build.0 = Debug|Any CPU
-		{CD2F7C3F-460C-4DBB-801D-531B00981115}.Debug|ARM64.ActiveCfg = Debug|Any CPU
-		{CD2F7C3F-460C-4DBB-801D-531B00981115}.Debug|ARM64.Build.0 = Debug|Any CPU
-		{CD2F7C3F-460C-4DBB-801D-531B00981115}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{CD2F7C3F-460C-4DBB-801D-531B00981115}.Debug|x64.Build.0 = Debug|Any CPU
-		{CD2F7C3F-460C-4DBB-801D-531B00981115}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{CD2F7C3F-460C-4DBB-801D-531B00981115}.Debug|x86.Build.0 = Debug|Any CPU
-		{CD2F7C3F-460C-4DBB-801D-531B00981115}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CD2F7C3F-460C-4DBB-801D-531B00981115}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CD2F7C3F-460C-4DBB-801D-531B00981115}.Release|ARM.ActiveCfg = Release|Any CPU
-		{CD2F7C3F-460C-4DBB-801D-531B00981115}.Release|ARM.Build.0 = Release|Any CPU
-		{CD2F7C3F-460C-4DBB-801D-531B00981115}.Release|ARM64.ActiveCfg = Release|Any CPU
-		{CD2F7C3F-460C-4DBB-801D-531B00981115}.Release|ARM64.Build.0 = Release|Any CPU
-		{CD2F7C3F-460C-4DBB-801D-531B00981115}.Release|x64.ActiveCfg = Release|Any CPU
-		{CD2F7C3F-460C-4DBB-801D-531B00981115}.Release|x64.Build.0 = Release|Any CPU
-		{CD2F7C3F-460C-4DBB-801D-531B00981115}.Release|x86.ActiveCfg = Release|Any CPU
-		{CD2F7C3F-460C-4DBB-801D-531B00981115}.Release|x86.Build.0 = Release|Any CPU
 		{8D0BB69E-1BB7-41D5-A55F-E0E247B203BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8D0BB69E-1BB7-41D5-A55F-E0E247B203BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8D0BB69E-1BB7-41D5-A55F-E0E247B203BF}.Debug|ARM.ActiveCfg = Debug|Any CPU
@@ -115,7 +93,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{A5648D14-8FA2-4CA1-91BC-3235C3020EDE} = {4670874E-1B2C-4B08-98F4-9B70D6312AF8}
 		{29CA919C-EFB9-4B2E-9E06-80A824CACA7B} = {7017E4FC-50BC-48DE-B89D-D577B5956789}
-		{CD2F7C3F-460C-4DBB-801D-531B00981115} = {7017E4FC-50BC-48DE-B89D-D577B5956789}
 		{8D0BB69E-1BB7-41D5-A55F-E0E247B203BF} = {7017E4FC-50BC-48DE-B89D-D577B5956789}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution

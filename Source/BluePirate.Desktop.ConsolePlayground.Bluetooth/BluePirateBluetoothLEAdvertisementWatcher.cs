@@ -82,7 +82,7 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
             }
         }
 
-        public BluePirateBluetoothLEAdvertisementWatcher()
+        public BluePirateBluetoothLEAdvertisementWatcher(String localNameFilter)
         {
             mWatcher = new BluetoothLEAdvertisementWatcher
             {
@@ -94,7 +94,9 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
             {
                 StoppedListening();
             };
-            
+            BluetoothLEAdvertisementFilter filter = new BluetoothLEAdvertisementFilter();
+            filter.Advertisement.LocalName = localNameFilter;
+            mWatcher.AdvertisementFilter = filter;
         }
 
         private async void WatcherAdvertisementReceivedAsync(BluetoothLEAdvertisementWatcher sender, BluetoothLEAdvertisementReceivedEventArgs args)
@@ -108,13 +110,6 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
 
             if (device == null)
                 return;
-
-            //only want to find the drone test
-            if (!device.Name.Equals("DroneTest")) 
-            {
-                //Console.WriteLine("Device Null could not get more information connect");
-                return;
-            }
                 
             //TODO remove or reduce some logic here
             var newDiscovery = false;

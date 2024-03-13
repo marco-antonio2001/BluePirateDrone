@@ -1,39 +1,54 @@
-﻿using BluePirate.Desktop.ConsolePlayground.Bluetooth;
+﻿using ABI.System.Collections.Generic;
+using BluePirate.Desktop.ConsolePlayground.Bluetooth;
 using BluePirate.Desktop.WindowsApp.Models;
+using BluePirate.Desktop.WindowsApp.MVVM.Model;
+using ModerUiDesignDemo.Core;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
-using Windows.ApplicationModel.VoiceCommands;
-using Windows.Devices.Bluetooth.GenericAttributeProfile;
+using System.Threading.Tasks;
 
-namespace BluePirate.Desktop.WindowsApp
+namespace BluePirate.Desktop.WindowsApp.MVVM.ViewModel
 {
-    public class ViewModel : INotifyPropertyChanged
+    class MainViewModel : ObservableObject
     {
+
         private ObservableCollection<KeyValuePairModel> _keyValuePairs;
         private KeyValuePairModel _selectedKeyValuePair;
+        private BluePirateBluetoothLEDevice _selectedBluetoothDevice;
         private ObservableCollection<GattServiceKVP> _gattServicesKVP;
-        private GattServiceKVP _selectedGattServicesKVP;
         private ObservableCollection<GattCharacteristicKVP> _gattCharacteristicsKVP;
         private GattCharacteristicKVP _selectedGattCharacteristicsKVP;
         private DroneAttitude _droneAHRS;
+        private ObservableCollection<BluePirateBluetoothLEDevice> _bluetoothLEDevices;
         private bool _isWriteSetPointBtnEnabled = false;
         private bool _isWritePIDConstantsBtnEnabled = false;
         private bool _isConnectToDroneBtnEnabled = true;
 
+        public double modelCenterX { get; set; }
+        public double modelCenterY { get; set; }
+        public double modelCenterZ { get; set; }
+
+        public DroneViewModel DroneVM { get; set; }
 
 
-        public ViewModel()
+        public ObservableCollection<BluePirateBluetoothLEDevice> DiscoveredDevices
         {
-            DroneAHRSSetPoint = new DroneAttitude();
-            DronePIDConfigValue = new DronePIDConfig();
-            DroneAHRSValue = new DroneAttitude();
-            modelCenterX = 0;
-            modelCenterY = 0;
-            modelCenterZ = 0;
+            get { return _bluetoothLEDevices; }
+            set
+            {
+                if (_bluetoothLEDevices != value)
+                {
+                    _bluetoothLEDevices = value;
+                    OnPropertyChanged(nameof(DiscoveredDevices));
+                }
+            }
         }
+
 
         public ObservableCollection<KeyValuePairModel> KeyValuePairs
         {
@@ -48,7 +63,7 @@ namespace BluePirate.Desktop.WindowsApp
             }
         }
 
-        public ObservableCollection<GattServiceKVP> GattServices 
+        public ObservableCollection<GattServiceKVP> GattServices
         {
             get { return _gattServicesKVP; }
             set
@@ -61,18 +76,18 @@ namespace BluePirate.Desktop.WindowsApp
             }
         }
 
-        public ObservableCollection<GattCharacteristicKVP> GattCharacteristics 
+        public ObservableCollection<GattCharacteristicKVP> GattCharacteristics
         {
             get { return _gattCharacteristicsKVP; }
             set
             {
-                if ( _gattCharacteristicsKVP != value)
+                if (_gattCharacteristicsKVP != value)
                 {
                     _gattCharacteristicsKVP = value;
                     OnPropertyChanged(nameof(GattCharacteristics));
                 }
             }
-            
+
         }
 
         public bool IsConnectToDroneBtnEnabled
@@ -127,18 +142,6 @@ namespace BluePirate.Desktop.WindowsApp
             }
         }
 
-        public GattServiceKVP SelectedGattServiceKVP
-        {
-            get { return _selectedGattServicesKVP; }
-            set
-            {
-                if(_selectedGattServicesKVP != value)
-                {
-                    _selectedGattServicesKVP = value;
-                    OnPropertyChanged(nameof(_selectedGattServicesKVP));
-                }
-            }
-        }
 
         public KeyValuePairModel SelectedKeyValuePair
         {
@@ -153,7 +156,22 @@ namespace BluePirate.Desktop.WindowsApp
             }
         }
 
+        public BluePirateBluetoothLEDevice SelectedDevice
+        {
+            get { return _selectedBluetoothDevice; }
+            set
+            {
+                if (_selectedBluetoothDevice != value)
+                {
+                    _selectedBluetoothDevice = value;
+                    OnPropertyChanged(nameof(SelectedDevice));
+                }
+            }
+        }
+
+
         public DroneAttitude DroneAHRSSetPoint { get; set; }
+        public DroneAttitude DroneAHRSSetPointTextbox { get; set; }
 
         public DroneAttitude DroneAHRSValue
         {
@@ -170,26 +188,17 @@ namespace BluePirate.Desktop.WindowsApp
 
         public DronePIDConfig DronePIDConfigValue { get; set; }
 
-        public double modelCenterX { get; set; }
-        public double modelCenterY { get; set; }
-        public double modelCenterZ { get; set; }
-
-
-
-        public void ClearLocalVariables()
+        public MainViewModel()
         {
-            _keyValuePairs.Clear();
-            _gattCharacteristicsKVP.Clear();
-            _gattServicesKVP.Clear();
-
+            DroneAHRSSetPoint = new DroneAttitude();
+            DroneAHRSSetPointTextbox = new DroneAttitude();
+            modelCenterX = 0;
+            modelCenterY = 0;
+            modelCenterZ = 0;
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
 
-        protected virtual void OnPropertyChanged(string propertyName)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
+        
 
     }
 }
