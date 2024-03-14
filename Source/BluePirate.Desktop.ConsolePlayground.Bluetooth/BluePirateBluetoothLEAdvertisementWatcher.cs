@@ -30,7 +30,7 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
         public event Action<BluePirateBluetoothLEDevice> DeviceTimedout = (device) => { };
 
         //fired when a a new value is available
-        public event Action<DroneAHRS> SubscribedValueChanged = (droneAHRS) => { };
+        public event Action<DroneAttitude> SubscribedValueChanged = (droneAHRS) => { };
         #endregion
 
         private static readonly Guid AHRSServiceGuid = new Guid("F000AB30-0451-4000-B000-000000000000");
@@ -43,7 +43,7 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
         private readonly Dictionary<string, BluePirateBluetoothLEDevice> mDiscoveredDevices = new Dictionary<string, BluePirateBluetoothLEDevice>();
         private readonly object mThreadLock = new object();
 
-        public DroneAHRS droneAHRS = new DroneAHRS();
+        public DroneAttitude droneAHRS = new DroneAttitude();
         public bool Listening => mWatcher.Status == BluetoothLEAdvertisementWatcherStatus.Started;
         public int HeartBeatTimeout { get; set; } = 30;
 
@@ -82,7 +82,7 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
             }
         }
 
-        public BluePirateBluetoothLEAdvertisementWatcher()
+        public BluePirateBluetoothLEAdvertisementWatcher(String localNameFilter)
         {
             mWatcher = new BluetoothLEAdvertisementWatcher
             {
@@ -94,7 +94,9 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
             {
                 StoppedListening();
             };
-            
+            BluetoothLEAdvertisementFilter filter = new BluetoothLEAdvertisementFilter();
+            filter.Advertisement.LocalName = localNameFilter;
+            mWatcher.AdvertisementFilter = filter;
         }
 
         private async void WatcherAdvertisementReceivedAsync(BluetoothLEAdvertisementWatcher sender, BluetoothLEAdvertisementReceivedEventArgs args)
@@ -108,13 +110,6 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
 
             if (device == null)
                 return;
-
-            //only want to find the drone test
-            if (!device.Name.Equals("DroneTest")) 
-            {
-                //Console.WriteLine("Device Null could not get more information connect");
-                return;
-            }
                 
             //TODO remove or reduce some logic here
             var newDiscovery = false;
@@ -232,7 +227,7 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
         }
 
         //write to characteristic 
-        public async Task WriteToCharacteristicSetPoint(AttitudeSetPoint droneAHRSSetPoint)
+        public async Task WriteToCharacteristicSetPoint(DroneAttitude droneAHRSSetPoint)
         {
             if(droneAHRSSetPoint == null)  
                 throw new ArgumentNullException();
@@ -285,12 +280,19 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
             {
                 Debug.WriteLine($"Failed to get characteristes from service {service.Uuid}......{e}");
             }
-            Debug.WriteLine($"Char async stat results: {mGattCharacteristicsResult.Status}");
-            if (mGattCharacteristicsResult.Status == GattCommunicationStatus.Success)
+            if (mGattCharacteristicsResult == null) 
             {
-                mGattDeviceService = service;
-                mGattDeviceService.Session.MaintainConnection = true;
+                Debug.WriteLine($"Could not get characteristics from service with uuid {AHRSServiceGuid} ...... try again..");
+                return false;
             }
+            Debug.WriteLine($"Char async stat results: {mGattCharacteristicsResult.Status}");
+            if (mGattCharacteristicsResult.Status != GattCommunicationStatus.Success)
+            {
+                Debug.WriteLine($"Returning from function as false... status was {mGattCharacteristicsResult.Status}");
+                return false;
+            }
+            mGattDeviceService = service;
+            mGattDeviceService.Session.MaintainConnection = true;
             return true;
         }
 
@@ -350,7 +352,7 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
             return arr;
         }
 
-        byte[] getAttitudeSetPointBytes(AttitudeSetPoint str)
+        byte[] getAttitudeSetPointBytes(DroneAttitude str)
         {
             int size = Marshal.SizeOf(str);
             byte[] arr = new byte[size];
@@ -395,15 +397,15 @@ namespace BluePirate.Desktop.ConsolePlayground.Bluetooth
             {
                 //every time a characteristic changes
                 var reader = DataReader.FromBuffer(args.CharacteristicValue);
-                byte[] bff = new byte[32];
+                byte[] bff = new byte[12];
                 reader.ReadBytes(bff);
 
                 IntPtr ptPoit = IntPtr.Zero;
                 try
                 {
-                    ptPoit = Marshal.AllocHGlobal(32);
-                    Marshal.Copy(bff, 0, ptPoit, 32);
-                    droneAHRS = (DroneAHRS)Marshal.PtrToStructure(ptPoit, typeof(DroneAHRS));
+                    ptPoit = Marshal.AllocHGlobal(12);
+                    Marshal.Copy(bff, 0, ptPoit, 12);
+                    droneAHRS = (DroneAttitude)Marshal.PtrToStructure(ptPoit, typeof(DroneAttitude));
                 }
                 finally
                 { 
