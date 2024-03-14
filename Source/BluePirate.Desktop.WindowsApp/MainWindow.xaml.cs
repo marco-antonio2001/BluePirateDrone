@@ -21,8 +21,6 @@ using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Interop;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using System.Windows.Media.Media3D;
 
 
@@ -76,11 +74,10 @@ namespace BluePirate.Desktop.WindowsApp
                 if (loggerEnabled)
                     log.Info($"{watcher.droneAHRS},{viewModel.DroneAHRSSetPoint}");
             };
-
             this.DataContext = viewModel;
-
             watcher.StartListening();
             InitializeComponent();
+
             Loaded += (e, a) => { Setup3dModelScene(); };
             Debug.WriteLine($"test is starting");
         }
@@ -94,8 +91,11 @@ namespace BluePirate.Desktop.WindowsApp
             //sets the model centre for rotation // wiring for the viewmodel for binding
             viewModel.modelCenterX = model.Content.Bounds.GetCenter().X;
             viewModel.modelCenterY = model.Content.Bounds.GetCenter().Y;
-            viewModel.modelCenterZ = model.Content.Bounds.GetCenter().Z;
+            viewModel.modelCenterZ = model.Content.Bounds.GetCenter().Z; 
 
+            helixViewPort.ShowFrameRate = true;
+            helixViewPort.LimitFPS = true;
+            
             helixViewPort.FixedRotationPointEnabled = true;
             helixViewPort.FixedRotationPoint = new Point3D(viewModel.modelCenterX, viewModel.modelCenterY, viewModel.modelCenterZ);
             helixViewPort.Camera.LookDirection = new Vector3D(viewModel.modelCenterX, viewModel.modelCenterY, viewModel.modelCenterZ);
