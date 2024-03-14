@@ -2,23 +2,38 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:BluePirate.Desktop.WindowsApp"
+            xmlns:viewModel="clr-namespace:BluePirate.Desktop.WindowsApp.MVVM.ViewModel"
+             xmlns:view="clr-namespace:BluePirate.Desktop.WindowsApp.MVVM.View"
              StartupUri="MainWindow.xaml"
              xmlns:po="http://schemas.microsoft.com/winfx/2006/xaml/presentation/options">
     <Application.Resources>
         <ResourceDictionary >
             <ResourceDictionary.MergedDictionaries>
+
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Light.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Dark.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Primary/MaterialDesignColor.DeepPurple.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Accent/MaterialDesignColor.Lime.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Primary/MaterialDesignColor.Grey.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Accent/MaterialDesignColor.Blue.xaml" />
+                <ResourceDictionary Source="Theme/MenuButtonTheme.xaml"/>
+                <ResourceDictionary Source="Theme/TextboxTheme.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
             <SolidColorBrush x:Key="MaterialDesign.Brush.Primary.Light" Color="{StaticResource Primary200}" po:Freeze="True" />
             <SolidColorBrush x:Key="MaterialDesign.Brush.Primary.Light.Foreground" Color="{StaticResource Primary200Foreground}" po:Freeze="True" />
             <SolidColorBrush x:Key="MaterialDesign.Brush.Primary" Color="{StaticResource Primary500}" po:Freeze="True" />
             <SolidColorBrush x:Key="MaterialDesign.Brush.Primary.Foreground" Color="{StaticResource Primary500Foreground}" po:Freeze="True" />
-            <SolidColorBrush x:Key="MaterialDesign.Brush.Primary.Dark" Color="{StaticResource Primary700}" po:Freeze="True" />
-            <SolidColorBrush x:Key="MaterialDesign.Brush.Primary.Dark.Foreground" Color="{StaticResource Primary700Foreground}" po:Freeze="True" />
+            <SolidColorBrush x:Key="MaterialDesign.Brush.Primary.Dark" Color="{StaticResource Primary900}" po:Freeze="True" />
+            <SolidColorBrush x:Key="MaterialDesign.Brush.Primary.Dark.Foreground" Color="{StaticResource Primary900Foreground}" po:Freeze="True" />
+
+            <SolidColorBrush x:Key="MaterialDesign.Brush.Accent.Light" Color="{StaticResource Accent200}" po:Freeze="True" />
+            <SolidColorBrush x:Key="MaterialDesign.Brush.Accent.Light.Foreground" Color="{StaticResource Accent200Foreground}" po:Freeze="True" />
+            <SolidColorBrush x:Key="MaterialDesign.Brush.Accent" Color="{StaticResource Accent400}" po:Freeze="True" />
+            <SolidColorBrush x:Key="MaterialDesign.Brush.Accent.Foreground" Color="{StaticResource Accent400Foreground}" po:Freeze="True" />
+            <SolidColorBrush x:Key="MaterialDesign.Brush.Accent.Dark" Color="{StaticResource Accent700}" po:Freeze="True" />
+            <SolidColorBrush x:Key="MaterialDesign.Brush.Accent.Dark.Foreground" Color="{StaticResource Accent700Foreground}" po:Freeze="True" />
+
         </ResourceDictionary>
+
     </Application.Resources>
 </Application>

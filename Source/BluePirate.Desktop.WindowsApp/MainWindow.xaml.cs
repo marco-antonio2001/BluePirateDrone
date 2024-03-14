@@ -1,5 +1,8 @@
 ﻿using BluePirate.Desktop.ConsolePlayground.Bluetooth;
 using BluePirate.Desktop.WindowsApp.Models;
+using BluePirate.Desktop.WindowsApp.MVVM.Model;
+using BluePirate.Desktop.WindowsApp.MVVM.ViewModel;
+using HelixToolkit.Wpf;
 using Python.Runtime;
 using System;
 using System.Collections.Generic;
@@ -7,18 +10,19 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using Windows.Devices.Bluetooth.GenericAttributeProfile;
+using System.Windows.Interop;
+using System.Windows.Media.Media3D;
+
 
 [assembly: log4net.Config.XmlConfigurator(Watch =true)]
 
@@ -29,13 +33,18 @@ namespace BluePirate.Desktop.WindowsApp
     /// </summary>
     public partial class MainWindow : Window
     {
+        private const string MODEL_PATH = @"C:\Users\marco\source\repos\BluePirate\Source\BluePirate.Desktop.WindowsApp\Models\arduinoBle3dModel.obj";
         private static string flightDataFilePath = "C:/Users/marco/source/repos/BluePirate/output/flightData.txt";
         private static readonly log4net.ILog log = log4net.LogManager.GetLogger("WindowsApp.cs");
         static public BluePirateBluetoothLEAdvertisementWatcher watcher;
-        ViewModel viewModel = new ViewModel();
+        DroneAttitudeSharedModel DroneAttitudeSharedModel = new DroneAttitudeSharedModel();
+        MainViewModel viewModel;
         bool loggerEnabled = false;
+        public object FilDia { get; private set; }
+
         public MainWindow()
         {
+            viewModel = new MainViewModel();
             //sets python dll path
             Runtime.PythonDLL = "C:\\Users\\marco\\AppData\\Local\\Programs\\Python\\Python311\\python311.dll";
             //initializes python engine
@@ -46,10 +55,13 @@ namespace BluePirate.Desktop.WindowsApp
                 Console.WriteLine("Window is closing! shutting down python engine!");
                 PythonEngine.Shutdown();
             };
-            watcher = new BluePirateBluetoothLEAdvertisementWatcher();
+            watcher = new BluePirateBluetoothLEAdvertisementWatcher("DroneTest");
             watcher.DeviceDiscovered += (device) =>
             {
-                viewModel.KeyValuePairs = new ObservableCollection<KeyValuePairModel>(watcher.DiscoredDevices.Select(kvp => new KeyValuePairModel { Key = kvp.Name, Value = kvp }));
+                if(viewModel.DiscoveredDevices != new ObservableCollection<BluePirateBluetoothLEDevice>(watcher.DiscoredDevices))
+                {
+                    viewModel.DiscoveredDevices = new ObservableCollection<BluePirateBluetoothLEDevice>(watcher.DiscoredDevices);
+                }
             };
             watcher.StoppedListening += () => 
             {
@@ -62,46 +74,51 @@ namespace BluePirate.Desktop.WindowsApp
                 if (loggerEnabled)
                     log.Info($"{watcher.droneAHRS},{viewModel.DroneAHRSSetPoint}");
             };
-
+            this.DataContext = viewModel;
             watcher.StartListening();
             InitializeComponent();
 
-            viewModel.KeyValuePairs = new ObservableCollection<KeyValuePairModel>(watcher.DiscoredDevices.Select(kvp => new KeyValuePairModel { Key = kvp.Name, Value = kvp }));
-
-            DataContext = viewModel;
+            Loaded += (e, a) => { Setup3dModelScene(); };
+            Debug.WriteLine($"test is starting");
         }
 
-        private void btnBLEStartListening_Click(object sender, RoutedEventArgs e)
+        private void Setup3dModelScene()
         {
-            watcher.StartListening();
-        }
+            ModelImporter import = new ModelImporter();
+            Model3DGroup model1 = import.Load(MODEL_PATH);
 
-        private void listViewDiscoveredDrones_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
+            model.Content = model1;
+            //sets the model centre for rotation // wiring for the viewmodel for binding
+            viewModel.modelCenterX = model.Content.Bounds.GetCenter().X;
+            viewModel.modelCenterY = model.Content.Bounds.GetCenter().Y;
+            viewModel.modelCenterZ = model.Content.Bounds.GetCenter().Z; 
 
-        }
-
-        private void btnBLEStopListening_Click(object sender, RoutedEventArgs e)
-        {
-            watcher.StopsListening();
+            helixViewPort.ShowFrameRate = true;
+            helixViewPort.LimitFPS = true;
+            
+            helixViewPort.FixedRotationPointEnabled = true;
+            helixViewPort.FixedRotationPoint = new Point3D(viewModel.modelCenterX, viewModel.modelCenterY, viewModel.modelCenterZ);
+            helixViewPort.Camera.LookDirection = new Vector3D(viewModel.modelCenterX, viewModel.modelCenterY, viewModel.modelCenterZ);
+            helixViewPort.CameraController.CameraTarget = new Point3D(viewModel.modelCenterX, viewModel.modelCenterY, viewModel.modelCenterZ);
         }
 
         private void btnConnectToSelectedBLEDevice_Click(object sender, RoutedEventArgs e)
         {
             //Connect/get Gatt services of whatever the selected device is
-            if (viewModel.SelectedKeyValuePair == null)
+            if (viewModel.SelectedDevice == null)
                 return;
 
-            BluePirateBluetoothLEDevice devicekvp = viewModel.SelectedKeyValuePair.Value;
+            BluePirateBluetoothLEDevice devicekvp = viewModel.SelectedDevice;
 
             //null gaurd
             if (devicekvp == null)
                 return;
+           
 
             var tcs = new TaskCompletionSource<bool>();
-
             Task.Run(async () =>
             {
+                viewModel.IsConnectToDroneBtnEnabled = false;
                 try
                 {
                     //return all services for device
@@ -118,14 +135,26 @@ namespace BluePirate.Desktop.WindowsApp
                         return;
                     }
                     await watcher.SubscribeToCharacteristicsAsync();
+                    //this.btnConnectToSelectedBLEDevice.IsEnabled=true;
                     Debug.WriteLine($"Device connected: {devicekvp.Connected}");
                 }
                 finally
                 {
                     //anything goes wrong exit task
+                    //enable connect button again but keep write to drone btns disabled
+                    viewModel.IsWriteSetPointBtnEnabled = false;
+                    viewModel.IsWritePIDConstantsBtnEnabled = false;
+                    viewModel.IsConnectToDroneBtnEnabled= true;
                     tcs.SetResult(false);
 
                 }
+
+                //enable button controls 
+                viewModel.IsWriteSetPointBtnEnabled = true;
+                viewModel.IsWritePIDConstantsBtnEnabled = true;
+                viewModel.IsConnectToDroneBtnEnabled = true;
+
+                //set task true
                 tcs.TrySetResult(true);
             });
 
@@ -137,6 +166,8 @@ namespace BluePirate.Desktop.WindowsApp
         private void btnWriteSetPointToDrone_Click(object sender, RoutedEventArgs e)
         {
             var tcs = new TaskCompletionSource<bool>();
+            viewModel.DroneAHRSSetPoint.roll = viewModel.DroneAHRSSetPointTextbox.roll;
+            viewModel.DroneAHRSSetPoint.pitch = viewModel.DroneAHRSSetPointTextbox.pitch;
 
             Task.Run(async () =>
             {
@@ -163,6 +194,7 @@ namespace BluePirate.Desktop.WindowsApp
 
         private void btnWritePidValues_Click(object sender, RoutedEventArgs e)
         {
+            
             var tcs = new TaskCompletionSource<bool>();
                 Task.Run(async () =>
                 {
@@ -184,7 +216,8 @@ namespace BluePirate.Desktop.WindowsApp
                     tcs.TrySetResult(true);
                 });
 
-                tcs.Task.Wait();
+            tcs.Task.Wait();
+            
         }
 
         private void cBoxLogData_Checked(object sender, RoutedEventArgs e)
@@ -227,9 +260,35 @@ namespace BluePirate.Desktop.WindowsApp
                 sys.path.append(@"C:\Users\marco\source\repos\BluePirate\Source\BluePirate.Desktop.WindowsApp");
                 var fligthDataFilePathParam = new PyString(flightDataFilePath);
                 var pythonScript = Py.Import("flightDataVisualizer");
-                pythonScript.InvokeMethod("analyseData", new PyObject[] { fligthDataFilePathParam });
+                try
+                {
+                    pythonScript.InvokeMethod("analyseData", new PyObject[] { fligthDataFilePathParam });
+                }catch(Exception ex)
+                {
+                    Debug.WriteLine(ex.Message);
+                }
+                
             }
 
         }
+
+        [DllImport("user32.dll")]
+        public static extern IntPtr SendMessage(IntPtr hWnd, int wMsg, int wParam, int lParam);
+        private void btnClose_Click(object sender, RoutedEventArgs e)
+        {
+            Application.Current.Shutdown();
+        }
+
+        private void pnlControlBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            WindowInteropHelper helper = new WindowInteropHelper(this);
+            SendMessage(helper.Handle, 161, 2, 0);
+        }
+
+        private void btnMinimize_Click(object sender, RoutedEventArgs e)
+        {
+            this.WindowState = WindowState.Minimized;
+        }
+
     }
 }
