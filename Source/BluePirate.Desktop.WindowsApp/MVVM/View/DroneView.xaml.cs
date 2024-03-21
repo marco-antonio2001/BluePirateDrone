@@ -26,13 +26,9 @@ namespace BluePirate.Desktop.WindowsApp.MVVM.View
     {
         DroneViewModel droneViewModel; 
         private const string MODEL_PATH = @"C:\Users\marco\source\repos\BluePirate\Source\BluePirate.Desktop.WindowsApp\Models\arduinoBle3dModel.obj";
-        private static string flightDataFilePath = "C:/Users/marco/source/repos/BluePirate/output/flightData.txt";
-        private static readonly log4net.ILog log = log4net.LogManager.GetLogger("WindowsApp.cs");
         public DroneView()
         {
             InitializeComponent();
-            DroneAttitudeSharedModel droneAttitudeSharedModel = new DroneAttitudeSharedModel();
-            droneViewModel = new DroneViewModel(droneAttitudeSharedModel);
             Loaded += (e, a) => { Setup3dModelScene(); };
             
         }

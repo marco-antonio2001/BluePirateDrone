@@ -1,4 +1,4 @@
-﻿using BluePirate.Desktop.ConsolePlayground.Bluetooth;
+﻿using BluePirate.Desktop.WindowsApp.BluetoothLeHelper;
 using BluePirate.Desktop.WindowsApp.Models;
 using BluePirate.Desktop.WindowsApp.MVVM.Model;
 using BluePirate.Desktop.WindowsApp.MVVM.ViewModel;
@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Packaging;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -37,8 +38,10 @@ namespace BluePirate.Desktop.WindowsApp
         private static string flightDataFilePath = "C:/Users/marco/source/repos/BluePirate/output/flightData.txt";
         private static readonly log4net.ILog log = log4net.LogManager.GetLogger("WindowsApp.cs");
         static public BluePirateBluetoothLEAdvertisementWatcher watcher;
-        DroneAttitudeSharedModel DroneAttitudeSharedModel = new DroneAttitudeSharedModel();
         MainViewModel viewModel;
+
+        public delegate void MyDelagate(string message);
+
         bool loggerEnabled = false;
         public object FilDia { get; private set; }
 
@@ -55,19 +58,17 @@ namespace BluePirate.Desktop.WindowsApp
                 Console.WriteLine("Window is closing! shutting down python engine!");
                 PythonEngine.Shutdown();
             };
-            watcher = new BluePirateBluetoothLEAdvertisementWatcher("DroneTest");
-            watcher.DeviceDiscovered += (device) =>
+
+            watcher = new BluePirateBluetoothLEAdvertisementWatcher("BluePirateDrone");
+            watcher.DeviceDiscovered += () =>
             {
-                if(viewModel.DiscoveredDevices != new ObservableCollection<BluePirateBluetoothLEDevice>(watcher.DiscoredDevices))
-                {
-                    viewModel.DiscoveredDevices = new ObservableCollection<BluePirateBluetoothLEDevice>(watcher.DiscoredDevices);
-                }
+                viewModel.IsConnectToDroneBtnEnabled = true;
+                viewModel.BluetoothLEDeviceAddress = watcher.BluetoothDeviceAddress;
             };
             watcher.StoppedListening += () => 
             {
                 //viewModel.ClearLocalVariables();
             };
-            watcher.DeviceTimedout += (device) => { viewModel.KeyValuePairs = new ObservableCollection<KeyValuePairModel>(watcher.DiscoredDevices.Select(kvp => new KeyValuePairModel { Key = kvp.Name, Value = kvp })); };
             watcher.SubscribedValueChanged += (ahrs) =>
             {
                 viewModel.DroneAHRSValue = watcher.droneAHRS;
@@ -104,63 +105,25 @@ namespace BluePirate.Desktop.WindowsApp
 
         private void btnConnectToSelectedBLEDevice_Click(object sender, RoutedEventArgs e)
         {
-            //Connect/get Gatt services of whatever the selected device is
-            if (viewModel.SelectedDevice == null)
-                return;
-
-            BluePirateBluetoothLEDevice devicekvp = viewModel.SelectedDevice;
-
-            //null gaurd
-            if (devicekvp == null)
-                return;
-           
-
             var tcs = new TaskCompletionSource<bool>();
+
             Task.Run(async () =>
             {
-                viewModel.IsConnectToDroneBtnEnabled = false;
                 try
                 {
-                    //return all services for device
-                    var rst = await watcher.GetResultOfDeviceServicesAsync(devicekvp.DeviceId);
-
-                    if (rst != null)
-                        viewModel.GattServices = new ObservableCollection<GattServiceKVP>(rst.Services.Select(kvp => new GattServiceKVP { Key = kvp.Uuid.ToString(), Value = kvp }));
-
-
-                    Debug.WriteLine($"Attempting to connect to device {devicekvp.DeviceId}");
-                    if (!await watcher.ConnectToDeviceAsync(devicekvp.DeviceId))
-                    {
-                        Debug.WriteLine("Failed to establish connection with device....");
-                        return;
-                    }
+                    await watcher.ConnectToDeviceAsync();
                     await watcher.SubscribeToCharacteristicsAsync();
-                    //this.btnConnectToSelectedBLEDevice.IsEnabled=true;
-                    Debug.WriteLine($"Device connected: {devicekvp.Connected}");
                 }
                 finally
                 {
-                    //anything goes wrong exit task
-                    //enable connect button again but keep write to drone btns disabled
-                    viewModel.IsWriteSetPointBtnEnabled = false;
-                    viewModel.IsWritePIDConstantsBtnEnabled = false;
-                    viewModel.IsConnectToDroneBtnEnabled= true;
                     tcs.SetResult(false);
-
                 }
-
-                //enable button controls 
-                viewModel.IsWriteSetPointBtnEnabled = true;
-                viewModel.IsWritePIDConstantsBtnEnabled = true;
-                viewModel.IsConnectToDroneBtnEnabled = true;
-
                 //set task true
                 tcs.TrySetResult(true);
             });
 
             tcs.Task.Wait();
         }
-
 
 
         private void btnWriteSetPointToDrone_Click(object sender, RoutedEventArgs e)
@@ -173,8 +136,7 @@ namespace BluePirate.Desktop.WindowsApp
             {
                 try
                 {
-                    //return all char for device
-                    await watcher.WriteToCharacteristicSetPoint(viewModel.DroneAHRSSetPoint);
+                    await watcher.WriteToDeviceCharacteristic(viewModel.DroneAHRSSetPoint);
                 }
                 catch (Exception e)
                 {
@@ -200,8 +162,7 @@ namespace BluePirate.Desktop.WindowsApp
                 {
                     try
                     {
-                        //return all char for device
-                        await watcher.WriteToCharacteristicPIDConfig(viewModel.DronePIDConfigValue);
+                        await watcher.WriteToDeviceCharacteristic(viewModel.DronePIDConfigValue);
                     }
                     catch (Exception ex)
                     {
@@ -218,6 +179,42 @@ namespace BluePirate.Desktop.WindowsApp
 
             tcs.Task.Wait();
             
+        }
+
+        private void toggleArmEsc_Checked(object sender, RoutedEventArgs e)
+        {
+            writeToArmEsc(true);
+        }
+
+        private void toggleArmEsc_Unchecked(object sender, RoutedEventArgs e)
+        {
+            writeToArmEsc(false);
+        }
+
+
+        private void writeToArmEsc(bool armEsc) 
+        {
+            var tcs = new TaskCompletionSource<bool>();
+            Task.Run(async () =>
+            {
+                try
+                {
+                    await watcher.WriteToDeviceCharacteristic(armEsc);
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine(ex);
+                }
+                finally
+                {
+                    //anything goes wrong exit task
+                    tcs.SetResult(false);
+
+                }
+                tcs.TrySetResult(true);
+            });
+
+            tcs.Task.Wait();
         }
 
         private void cBoxLogData_Checked(object sender, RoutedEventArgs e)
@@ -289,6 +286,7 @@ namespace BluePirate.Desktop.WindowsApp
         {
             this.WindowState = WindowState.Minimized;
         }
+
 
     }
 }

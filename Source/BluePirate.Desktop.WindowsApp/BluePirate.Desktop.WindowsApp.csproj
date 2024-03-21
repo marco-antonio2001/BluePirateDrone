@@ -17,9 +17,6 @@
     <PackageReference Include="pythonnet" Version="3.0.3" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\BluePirate.Desktop.ConsolePlayground.Bluetooth\BluePirate.Desktop.ConsolePlayground.Bluetooth.csproj" />
-  </ItemGroup>
-  <ItemGroup>
     <None Update="flightDataVisualizer.py">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
