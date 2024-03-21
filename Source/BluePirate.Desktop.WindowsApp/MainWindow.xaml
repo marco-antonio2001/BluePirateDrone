@@ -4,8 +4,8 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes" 
-        xmlns:helix="http://helix-toolkit.org/wpf" 
-        x:Class="BluePirate.Desktop.WindowsApp.MainWindow"
+        xmlns:helix="http://helix-toolkit.org/wpf" xmlns:viewmodel="clr-namespace:BluePirate.Desktop.WindowsApp.MVVM.ViewModel" d:DataContext="{d:DesignInstance Type=viewmodel:MainViewModel}"
+    x:Class="BluePirate.Desktop.WindowsApp.MainWindow"
         mc:Ignorable="d"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
         WindowStyle="None"
@@ -139,26 +139,34 @@
                             </Grid.RowDefinitions>
 
                             <Grid Grid.Row="0">
-                                <StackPanel  Orientation="Horizontal">
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
 
-                                    <ComboBox Name="cmbBoxDevicesDiscovered"
-                                          Margin="15,0,5,0"
-                                          materialDesign:HintAssist.Hint="Select Device"
-                                          ItemsSource="{Binding Path=DiscoveredDevices,UpdateSourceTrigger=PropertyChanged}"
-                                          SelectedItem="{Binding SelectedDevice}" 
-                                          
-                                          Style="{StaticResource MaterialDesignFloatingHintComboBox}" Width="100" />
+                                    <Border>
+                                        <StackPanel Orientation="Vertical">
+                                            <TextBlock Text="Arm Motors" Foreground="{StaticResource MaterialDesign.Brush.Primary.Dark.Foreground}" 
+                                                Margin="10,10,10,15"/>
+                                            <ToggleButton
+                                                    Name="toggleArmEsc"
+                                                    IsChecked="False"
+                                                    Checked="toggleArmEsc_Checked"
+                                                    Unchecked="toggleArmEsc_Unchecked"
+                                                    Style="{StaticResource MaterialDesignSwitchSecondaryToggleButton}"
+                                                    ToolTip="MaterialDesignSwitchSecondaryToggleButton" Width="41"/>
+                                        </StackPanel>
+                                    </Border>
 
+                                    
                                     <Button Name="btnConnectToDevice"
                                     Margin="10,10,0,10"
                                       Content="Connect"
                                       Foreground="{StaticResource SecondaryHueMidForegroundBrush}"
-                                      IsEnabled="True"
+                                      IsEnabled="{Binding Path=IsConnectToDroneBtnEnabled ,UpdateSourceTrigger=PropertyChanged}"
                                       Style="{StaticResource MaterialDesignOutlinedDarkButton}"
                                       Click="btnConnectToSelectedBLEDevice_Click"
                                       ToolTip="MaterialDesignOutlinedButton" Width="106"
                                       />
                                 </StackPanel>
+
                             </Grid>
 
                             <Grid Grid.Row="1">

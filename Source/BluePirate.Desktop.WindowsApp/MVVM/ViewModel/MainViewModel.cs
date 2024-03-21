@@ -17,14 +17,8 @@ namespace BluePirate.Desktop.WindowsApp.MVVM.ViewModel
     class MainViewModel : ObservableObject
     {
 
-        private ObservableCollection<KeyValuePairModel> _keyValuePairs;
-        private KeyValuePairModel _selectedKeyValuePair;
-        private BluePirateBluetoothLEDevice _selectedBluetoothDevice;
-        private ObservableCollection<GattServiceKVP> _gattServicesKVP;
-        private ObservableCollection<GattCharacteristicKVP> _gattCharacteristicsKVP;
-        private GattCharacteristicKVP _selectedGattCharacteristicsKVP;
         private DroneAttitude _droneAHRS;
-        private ObservableCollection<BluePirateBluetoothLEDevice> _bluetoothLEDevices;
+        private ulong _bluetoothLEDeviceAddress;
         private bool _isWriteSetPointBtnEnabled = false;
         private bool _isWritePIDConstantsBtnEnabled = false;
         private bool _isConnectToDroneBtnEnabled = true;
@@ -36,58 +30,17 @@ namespace BluePirate.Desktop.WindowsApp.MVVM.ViewModel
         public DroneViewModel DroneVM { get; set; }
 
 
-        public ObservableCollection<BluePirateBluetoothLEDevice> DiscoveredDevices
+        public ulong BluetoothLEDeviceAddress
         {
-            get { return _bluetoothLEDevices; }
+            get { return _bluetoothLEDeviceAddress; }
             set
             {
-                if (_bluetoothLEDevices != value)
+                if (_bluetoothLEDeviceAddress != value)
                 {
-                    _bluetoothLEDevices = value;
-                    OnPropertyChanged(nameof(DiscoveredDevices));
+                    _bluetoothLEDeviceAddress = value;
+                    OnPropertyChanged(nameof(BluetoothLEDeviceAddress));
                 }
             }
-        }
-
-
-        public ObservableCollection<KeyValuePairModel> KeyValuePairs
-        {
-            get { return _keyValuePairs; }
-            set
-            {
-                if (_keyValuePairs != value)
-                {
-                    _keyValuePairs = value;
-                    OnPropertyChanged(nameof(KeyValuePairs));
-                }
-            }
-        }
-
-        public ObservableCollection<GattServiceKVP> GattServices
-        {
-            get { return _gattServicesKVP; }
-            set
-            {
-                if (_gattServicesKVP != value)
-                {
-                    _gattServicesKVP = value;
-                    OnPropertyChanged(nameof(GattServices));
-                }
-            }
-        }
-
-        public ObservableCollection<GattCharacteristicKVP> GattCharacteristics
-        {
-            get { return _gattCharacteristicsKVP; }
-            set
-            {
-                if (_gattCharacteristicsKVP != value)
-                {
-                    _gattCharacteristicsKVP = value;
-                    OnPropertyChanged(nameof(GattCharacteristics));
-                }
-            }
-
         }
 
         public bool IsConnectToDroneBtnEnabled
@@ -129,47 +82,6 @@ namespace BluePirate.Desktop.WindowsApp.MVVM.ViewModel
             }
         }
 
-        public GattCharacteristicKVP SelectedGattCharacteristicsKVP
-        {
-            get { return _selectedGattCharacteristicsKVP; }
-            set
-            {
-                if (_selectedGattCharacteristicsKVP != value)
-                {
-                    _selectedGattCharacteristicsKVP = value;
-                    OnPropertyChanged(nameof(SelectedGattCharacteristicsKVP));
-                }
-            }
-        }
-
-
-        public KeyValuePairModel SelectedKeyValuePair
-        {
-            get { return _selectedKeyValuePair; }
-            set
-            {
-                if (_selectedKeyValuePair != value)
-                {
-                    _selectedKeyValuePair = value;
-                    OnPropertyChanged(nameof(SelectedKeyValuePair));
-                }
-            }
-        }
-
-        public BluePirateBluetoothLEDevice SelectedDevice
-        {
-            get { return _selectedBluetoothDevice; }
-            set
-            {
-                if (_selectedBluetoothDevice != value)
-                {
-                    _selectedBluetoothDevice = value;
-                    OnPropertyChanged(nameof(SelectedDevice));
-                }
-            }
-        }
-
-
         public DroneAttitude DroneAHRSSetPoint { get; set; }
         public DroneAttitude DroneAHRSSetPointTextbox { get; set; }
 
@@ -192,6 +104,8 @@ namespace BluePirate.Desktop.WindowsApp.MVVM.ViewModel
         {
             DroneAHRSSetPoint = new DroneAttitude();
             DroneAHRSSetPointTextbox = new DroneAttitude();
+            DronePIDConfigValue = new DronePIDConfig();
+            IsConnectToDroneBtnEnabled = false;
             modelCenterX = 0;
             modelCenterY = 0;
             modelCenterZ = 0;
