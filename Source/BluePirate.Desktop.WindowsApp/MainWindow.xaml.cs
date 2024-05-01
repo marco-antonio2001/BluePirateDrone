@@ -113,6 +113,7 @@ namespace BluePirate.Desktop.WindowsApp
                 {
                     await watcher.ConnectToDeviceAsync();
                     await watcher.SubscribeToCharacteristicsAsync();
+                    await watcher.ReadAllCharacteristicsAsync();
                 }
                 finally
                 {
@@ -183,16 +184,16 @@ namespace BluePirate.Desktop.WindowsApp
 
         private void toggleArmEsc_Checked(object sender, RoutedEventArgs e)
         {
-            writeToArmEsc(true);
+            writeToArmEsc(1);
         }
 
         private void toggleArmEsc_Unchecked(object sender, RoutedEventArgs e)
         {
-            writeToArmEsc(false);
+            writeToArmEsc(0);
         }
 
 
-        private void writeToArmEsc(bool armEsc) 
+        private void writeToArmEsc(byte armEsc) 
         {
             var tcs = new TaskCompletionSource<bool>();
             Task.Run(async () =>

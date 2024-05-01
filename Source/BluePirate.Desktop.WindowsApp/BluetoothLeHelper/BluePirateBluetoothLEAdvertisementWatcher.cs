@@ -215,6 +215,40 @@ namespace BluePirate.Desktop.WindowsApp.BluetoothLeHelper
                     {
                         Characteristic.ValueChanged += Characteristic_ValueChanged;
 
+                    }
+                }
+
+            }
+
+        }
+
+        /// <summary>
+        /// This async method will subscribe to the AHRS characteristic (can use the await Keyword)
+        /// </summary>
+        /// <returns>return the async Task </returns>
+        public async Task ReadAllCharacteristicsAsync()
+        {
+            if (mGattCharacteristicsResult == null)
+            {
+                Debug.WriteLine("Gatt Chars are null ... connect to device first");
+                return;
+            }
+            if (mGattCharacteristicsResult.Status == GattCommunicationStatus.Success)
+            {
+                Characteristic = mGattCharacteristicsResult.Characteristics.FirstOrDefault(c => c.Uuid == DronePIDConfigCharacteristicGuid);
+                if (Characteristic == null) return;
+                GattCharacteristicProperties properties = Characteristic.CharacteristicProperties;
+
+                if (properties.HasFlag(GattCharacteristicProperties.Read))
+                {
+                    Console.WriteLine("This characteristic has notify");
+                    var readResults = await Characteristic.ReadValueAsync();
+                    if (readResults.Status == GattCommunicationStatus.Success)
+                    {
+                        reader = DataReader.FromBuffer(readResults.Value);
+                        reader.ReadBytes(new byte[Marshal.SizeOf(new DronePIDConfig())]);
+
+
                         // Server has been informed of clients interest.
                     }
                 }
@@ -289,9 +323,9 @@ namespace BluePirate.Desktop.WindowsApp.BluetoothLeHelper
                 structureToWrite = (DronePIDConfig)structureToWrite;
                 characteristic = mGattCharacteristicsResult.Characteristics.FirstOrDefault(s => s.Uuid == DronePIDConfigCharacteristicGuid);
             }
-            else if (structureToWrite is DronePIDConfig)
+            else if (structureToWrite is byte)
             {
-                Debug.WriteLine("Writting to the arm ESC characteristic");
+                Debug.WriteLine($"Writting to the arm ESC characteristic {(byte)structureToWrite}");
                 characteristic = mGattCharacteristicsResult.Characteristics.FirstOrDefault(s => s.Uuid == armEscCharacteristicGuid);
                 isArmEsc = true;
             }
@@ -307,7 +341,7 @@ namespace BluePirate.Desktop.WindowsApp.BluetoothLeHelper
                 var writer = new DataWriter();
                 if(isArmEsc)
                 {
-                    writer.WriteBoolean((bool)structureToWrite);
+                    writer.WriteByte((byte)structureToWrite);
                 }
                 else
                 {

@@ -105,6 +105,9 @@ namespace BluePirate.Desktop.WindowsApp.MVVM.ViewModel
             DroneAHRSSetPoint = new DroneAttitude();
             DroneAHRSSetPointTextbox = new DroneAttitude();
             DronePIDConfigValue = new DronePIDConfig();
+            DronePIDConfigValue.MKp = 3.0f;
+            DronePIDConfigValue.MKi = 0.7f;
+            DronePIDConfigValue.MKd = 1.0f;
             IsConnectToDroneBtnEnabled = false;
             modelCenterX = 0;
             modelCenterY = 0;
